@@ -102,3 +102,20 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Ide
+.idea
+
+# OS
+*.swp
+.DS_Store
+*.pyc
+
+# Log operations
+*/operations.log
+
+# Development
+garbage/
+
+# Notebook
+**/.ipynb_checkpoints/*
