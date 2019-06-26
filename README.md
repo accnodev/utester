@@ -3,9 +3,9 @@ Unit Testing for Infrastructure
 
 ## Links
  
- - []()  
+ - [Confluent’s Python client for Apache Kafka](https://docs.confluent.io/current/clients/confluent-kafka-python/)
+ - [Python client for Apache Kafka](https://kafka-python.readthedocs.io/en/master/apidoc/kafka.html)  
  
-
 
 ## Kafka
 
@@ -24,7 +24,7 @@ python utKafka.py --help
 python utKafka.py -b 192.168.56.51:9092 -pl
 ```
 
-### Describe topic
+### Describe topic
     
 ```python
 python utKafka.py -b 192.168.56.51:9092 -d topic -cf utester
@@ -35,3 +35,4 @@ python utKafka.py -b 192.168.56.51:9092 -d topic -cf utester
 ```python
 python utKafka.py -b 192.168.56.51:9092 -dt
 ```
+
