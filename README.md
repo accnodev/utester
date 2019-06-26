@@ -4,7 +4,8 @@ Unit Testing for Infrastructure
 ## Links
  - []()
 
-## Kakfa
+
+## Kafka
 
 Unit Tester for __Kafka__ deployment.
 
