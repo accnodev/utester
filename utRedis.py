@@ -43,7 +43,7 @@ def send_to_redis(config):
         redis = connect_redis_without_ssl(config)
 
     if config['hellotest']:
-        hello_redis(redis, config)
+        hello_redis(redis)
 
     if config['getkey']:
         get_key(redis, config['getkey'])
