@@ -37,7 +37,13 @@ def send_to_redis(config):
     #     return {"logtrace": "HOST UNREACHABLE", "status": "UNKNOWN"}
 
     # ------------------------- Switch options ------------------------- #
-    hello_redis(config)
+    if config['sslconnection']:
+        redis = connect_redis_with_ssl(config)
+    else:
+        redis = connect_redis_without_ssl(config)
+
+    if config['hellotest']:
+        hello_redis_without_SSL(redis, config)
 
     # ------------------------------------------------------------------ #
 
@@ -46,29 +52,44 @@ def send_to_redis(config):
     return {"logtrace": log_trace, "status": status}
 
 
-def hello_redis(config):
-    """Hello Redis Program"""
-
-    # step 1: create the Redis Connection object
+def connect_redis_without_ssl(config):
     try:
+        conn = redis.StrictRedis(host=config['host'],port=config['port'],password=config['password'])
+        print(conn)
+        conn.ping()
+        print('Connected!')
+    except Exception as ex:
+        e, _, ex_traceback = sys.exc_info()
+        log_traceback(log, ex, ex_traceback)
+        return {"logtrace": "HOST UNREACHABLE", "status": "UNKNOWN"}
+    return conn
 
-        # The decode_repsonses flag here directs the client to convert the responses from Redis into Python strings
-        # using the default encoding utf-8.  This is client specific.
-        if config['password']:
-            r = redis.StrictRedis(host=config['host'], port=config['port'], password=config['password'], decode_responses=True)
-        else:
-            r = redis.StrictRedis(host=config['host'], port=config['port'], password=config['password'], decode_responses=True)
 
-        # step 2: Set the hello message in Redis
-        r.set("msg:hello", "Hello Redis!!!")
+def connect_redis_with_ssl(config):
+    try:
+        conn = redis.StrictRedis(host=config['host'],port=config['port'],password=config['password'], ssl=True,
+                                 ssl_ca_certs='LOCAL/PATH/TO/rackspace-ca-2016.pem')
+        print(conn)
+        conn.ping()
+        print('Connected!')
+    except Exception as ex:
+        e, _, ex_traceback = sys.exc_info()
+        log_traceback(log, ex, ex_traceback)
+        return {"logtrace": "HOST UNREACHABLE", "status": "UNKNOWN"}
+    return conn
 
-        # step 3: Retrieve the hello message from Redis
-        msg = r.get("msg:hello")
+
+def hello_redis_without_SSL(redis, config):
+    try:
+        # step 1: Set the hello message in Redis
+        redis.set("msg:hello", "Hello Redis!!!")
+
+        # step 2: Retrieve the hello message from Redis
+        msg = redis.get("msg:hello")
         print(msg)
 
     except Exception as e:
         print(e)
-
 
 
 def publish_lines(producer, topic):
@@ -90,7 +111,10 @@ def main(args, loglevel):
     log.debug("------------------ Reading config ------------------")
 
 
-    config = {'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password}
+    config = {'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
+              'hellotest': args.hellotest,
+              'sslconnection': args.sslconnection
+              }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
     _info = send_to_redis(config)
@@ -106,9 +130,13 @@ def parse_args():
     parser.add_argument('-V', '--version', action='version', version='%(prog)s '+version)
 
     parser.add_argument('-ho', '--host', help='Host', type=str, default="none", required=True)
-    parser.add_argument('-p', '--port', help='Port', type=str, default="none", required=True)
+    parser.add_argument('-p', '--port', help='Port', type=str, default="6379", required=False)
     parser.add_argument('-u', '--user', help='User (default=None)', type=str, default=None)
     parser.add_argument('-pw', '--password', help='Password (default=None)', type=str, default=None)
+
+    parser.add_argument('-ht', '--hellotest', help='Hello test', action='store_const', const=True, default=False)
+    parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
+
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()

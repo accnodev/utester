@@ -36,3 +36,14 @@ python utKafka.py -b 192.168.56.51:9092 -d topic -cf utester
 python utKafka.py -b 192.168.56.51:9092 -dt
 ```
 
+
+## Redis
+
+Unit Tester for __Redis__ deployment.
+
+```bash
+python utRedis.py --help
+```
+
+ - Test Hello redis without SSL
+ 
