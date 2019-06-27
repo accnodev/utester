@@ -43,7 +43,7 @@ def send_to_redis(config):
         redis = connect_redis_without_ssl(config)
 
     if config['hellotest']:
-        hello_redis_without_SSL(redis, config)
+        hello_redis(redis, config)
 
     # ------------------------------------------------------------------ #
 
@@ -68,6 +68,8 @@ def connect_redis_without_ssl(config):
 def connect_redis_with_ssl(config):
     try:
         conn = redis.StrictRedis(host=config['host'],port=config['port'],password=config['password'], ssl=True)
+        # conn = redis.StrictRedis(host=config['host'], port=config['port'], ssl=True,
+        #                          ssl_ca_certs='/etc/pki/tls/certs/cacertorange.crt')
         print(conn)
         conn.ping()
         print('Connected!')
@@ -78,7 +80,7 @@ def connect_redis_with_ssl(config):
     return conn
 
 
-def hello_redis_without_SSL(redis, config):
+def hello_redis(redis, config):
     try:
         # step 1: Set the hello message in Redis
         redis.set("msg:hello", "Hello Redis!!!")
