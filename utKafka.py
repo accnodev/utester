@@ -59,6 +59,10 @@ def send_to_kafka(config):
     if config['producelines']:
         publish_lines(producer, config['topic'])
 
+    if config['listtopics']:
+        a = create_admin_client(config['broker'])
+        list_topics(a)
+
     if config['deletetopic']:
         a = create_admin_client(config['broker'])
         delete_topic(a, config['topic'])
@@ -103,6 +107,11 @@ def describe_configs(a, config, filter):
             raise
 
 
+def list_topics(a):
+    topic_list = a.list_topics()
+    print(topic_list.topics)
+
+
 def delete_topic(a, topic):
     topics = [topic]
     # Returns a dict of <topic,future>.
@@ -141,6 +150,7 @@ def main(args, loglevel):
 
     config = {'broker': args.broker, 'topic': args.topic,
               'producelines': args.producelines,
+              'listtopics': args.listtopics,
               'deletetopic': args.deletetopic,
               'describe': args.describe,
               'configfilter': args.configfilter
@@ -162,6 +172,7 @@ def parse_args():
     parser.add_argument('-b', '--broker', help='Broker', type=str, default="none", required=True)
     parser.add_argument('-t', '--topic', help='Topic (default=utester)', type=str, default="utester")
     parser.add_argument('-pl', '--producelines', help='Produce from command line inputs', action='store_const', const=True, default=False)
+    parser.add_argument('-lt', '--listtopics', help='List Topics', action='store_const', const=True, default=False)
     parser.add_argument('-dt', '--deletetopic', help='Delete Topic (if topic not specified, default topic will be deleted)', action='store_const', const=True, default=False)
     # parser.add_argument('-sc', '--showconfig', help='Show Config', action='store_const', const=True, default=False)
     parser.add_argument('-d', '--describe', default='unknown', const='all', nargs='?', choices=['unknown', 'any', 'topic', 'group', 'broker'], help='Resource type from list (default: %(default)s)')

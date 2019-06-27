@@ -119,3 +119,6 @@ garbage/
 
 # Notebook
 **/.ipynb_checkpoints/*
+
+# Configuraton
+*.local.json
