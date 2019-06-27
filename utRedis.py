@@ -45,6 +45,9 @@ def send_to_redis(config):
     if config['hellotest']:
         hello_redis(redis, config)
 
+    if config['getkey']:
+        get_key(redis, config)
+
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -80,15 +83,22 @@ def connect_redis_with_ssl(config):
     return conn
 
 
-def hello_redis(redis, config):
+def get_key(redis, key):
+    try:
+        msg = redis.get(key)
+        print("msg:", msg)
+    except Exception as e:
+        print(e)
+
+
+def hello_redis(redis):
     try:
         # step 1: Set the hello message in Redis
         redis.set("msg:hello", "Hello Redis!!!")
 
         # step 2: Retrieve the hello message from Redis
         msg = redis.get("msg:hello")
-        print(msg)
-
+        print("msg:", msg)
     except Exception as e:
         print(e)
 
@@ -115,6 +125,7 @@ def main(args, loglevel):
     config = {'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
               'hellotest': args.hellotest,
               'sslconnection': args.sslconnection
+              'getkey': args.getkey
               }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
@@ -136,8 +147,7 @@ def parse_args():
     parser.add_argument('-pw', '--password', help='Password (default=None)', type=str, default=None)
 
     parser.add_argument('-ht', '--hellotest', help='Hello test', action='store_const', const=True, default=False)
-    parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
-
+    parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()
