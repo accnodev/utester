@@ -86,7 +86,7 @@ def connect_redis_with_ssl(config):
 def get_key(redis, key):
     try:
         msg = redis.get(key)
-        print("msg:", msg)
+        print("msg:", str(msg))
     except Exception as e:
         print(e)
 
@@ -98,7 +98,7 @@ def hello_redis(redis):
 
         # step 2: Retrieve the hello message from Redis
         msg = redis.get("msg:hello")
-        print("msg:", msg)
+        print("msg:", str(msg))
     except Exception as e:
         print(e)
 
