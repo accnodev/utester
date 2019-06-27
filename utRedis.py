@@ -124,7 +124,7 @@ def main(args, loglevel):
 
     config = {'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
               'hellotest': args.hellotest,
-              'sslconnection': args.sslconnection
+              'sslconnection': args.sslconnection,
               'getkey': args.getkey
               }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
