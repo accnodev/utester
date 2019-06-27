@@ -146,6 +146,7 @@ def parse_args():
     parser.add_argument('-u', '--user', help='User (default=None)', type=str, default=None)
     parser.add_argument('-pw', '--password', help='Password (default=None)', type=str, default=None)
 
+    parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
     parser.add_argument('-ht', '--hellotest', help='Hello test', action='store_const', const=True, default=False)
     parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
 
