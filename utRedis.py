@@ -67,8 +67,7 @@ def connect_redis_without_ssl(config):
 
 def connect_redis_with_ssl(config):
     try:
-        conn = redis.StrictRedis(host=config['host'],port=config['port'],password=config['password'], ssl=True,
-                                 ssl_ca_certs='LOCAL/PATH/TO/rackspace-ca-2016.pem')
+        conn = redis.StrictRedis(host=config['host'],port=config['port'],password=config['password'], ssl=True)
         print(conn)
         conn.ping()
         print('Connected!')
