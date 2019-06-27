@@ -3,6 +3,23 @@
 
 """
 Unit test a Redis deployment.
+ - Connect using ssl.
+ - conenct without ssl.
+ - Hello test. Send Hello message to Redis and get it back.
+ - Get by ky. Get message by key.
+
+In order to work with password, store it under /root/psa/.psa.shadow.
+
+Example:
+    Connect using SSL
+        python utRedis.py -ho 192.168.56.51 -p 6379 -ssl -p `cat /root/psa/.psa.shadow`
+    Connect without SSL
+        python utRedis.py -ho 192.168.56.51 -p 6379
+    Hello test
+        python utRedis.py -ho 192.168.56.51 -p 6379 -ssl -ht -p `cat /root/psa/.psa.shadow`
+    Get key with SSL
+        python utRedis.py -ho 192.168.56.51 -p 6379 -ssl -gk msg:hello -p `cat /root/psa/.psa.shadow`
+
 """
 
 import argparse
