@@ -46,7 +46,7 @@ def send_to_redis(config):
         hello_redis(redis, config)
 
     if config['getkey']:
-        get_key(redis, config)
+        get_key(redis, config['getkey'])
 
     # ------------------------------------------------------------------ #
 
