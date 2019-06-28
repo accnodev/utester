@@ -42,7 +42,7 @@ version = "1.0"
 
 
 def check_hardware(config):
-    log.debug("------------------ Begin send_to_kafka ------------------")
+    log.debug("------------------ Begin check_hardware ------------------")
     log_trace = 'None'
     status = 'Ok'
 
@@ -73,49 +73,46 @@ def check_hardware(config):
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
-    log.debug("------------------ End send_to_kafka ------------------")
+    log.debug("------------------ End check_hardware ------------------")
     return {"logtrace": log_trace, "status": status}
-
-
 
 
 def main(args, loglevel):
     if args.logging:
-        logging.basicConfig(filename=logfile, format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', level=loglevel)
-    logging.info('Started send_to_kafka')
+        logging.basicConfig(filename=logfile, format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                            level=loglevel)
+    logging.info('Started check_hardware')
     log.debug("------------------ Reading config ------------------")
 
-
-    config = {'broker': args.broker, 'topic': args.topic,
-              'producelines': args.producelines,
-              'listtopics': args.deletetopic,
-              'deletetopic': args.deletetopic,
-              'describe': args.describe,
-              'configfilter': args.configfilter
-              }
+    config = {
+        'configfile': args.configfile
+    }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
     hw_info = check_hardware(config)
 
     print("Done.")
-    logging.info('Finished send_to_kafka')
-    exit_to_icinga(nodes_info)
+    logging.info('Finished check_hardware')
+    exit_to_icinga(hw_info)
 
 
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
-    parser.add_argument('-V', '--version', action='version', version='%(prog)s '+version)
+    parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + version)
 
-    parser.add_argument('-c', '--configfile', help='Configuration File (.json).', type=str, default="none", required=True)
-    parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
+    parser.add_argument('-c', '--configfile', help='Configuration File (.json).', type=str, default="none",
+                        required=True)
+    parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const',
+                        const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()
-    verbosity.add_argument('-v', '--verbose', help='increase output verbosity', action='store_const', const=logging.DEBUG, default=logging.INFO)
-    verbosity.add_argument('-q', '--quiet', help='hide any debug exit', dest='verbose', action='store_const', const=logging.WARNING)
+    verbosity.add_argument('-v', '--verbose', help='increase output verbosity', action='store_const',
+                           const=logging.DEBUG, default=logging.INFO)
+    verbosity.add_argument('-q', '--quiet', help='hide any debug exit', dest='verbose', action='store_const',
+                           const=logging.WARNING)
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = parse_args()
     main(args, args.verbose)
-

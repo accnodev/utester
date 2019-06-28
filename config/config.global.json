@@ -1,11 +1,11 @@
 {
     "utHardware": [
         {
-            "type" : "kafka",
-            "hardware" : {
+            "type": "kafka",
+            "hardware": {
                 "fs": ["fs1", "fs2", "fs3"],
-                "Ingress" : [2888, 9093, 3888, 2181, 9092],
-                "Egress" : [0],
+                "Ingress": [2888, 9093, 3888, 2181, 9092],
+                "Egress": [0],
                 "etchost": {
                     "ip": "127.0.0.1",
                     "fqdn": "<fqdn>"
