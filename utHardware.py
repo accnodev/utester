@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # # -*- coding: utf-8 -*-
 
+# TODO: Modify the help message based on all the hardware checks
 """
-Unit test a Kafka deployment.
+Unit test the hardware of a machine.
  - Test Producer from command lines. This will autocreate a topic named 'utester'
  - Test Delete topic
  - Test Describe resource with filter
@@ -24,17 +25,12 @@ Example:
 
 import argparse
 import logging
-import os
-import sys
 
 from pathlib import Path
 from argparse import RawTextHelpFormatter
 
-from confluent_kafka import Producer
-from confluent_kafka.admin import AdminClient, ConfigResource, ConfigSource
-from confluent_kafka import KafkaException
 from helpers.utils import *
-from helpers.kafka import *
+#from helpers.hardware import *
 
 log = logging.getLogger(Path(__file__).stem)
 logfile = 'operations.log'
@@ -46,30 +42,32 @@ def check_hardware(config):
     log_trace = 'None'
     status = 'Ok'
 
-    try:
-        conf = {'bootstrap.servers': config['broker']}
-        producer = Producer(**conf)
-
-    except Exception as ex:
-        e, _, ex_traceback = sys.exc_info()
-        log_traceback(log, ex, ex_traceback)
-        return {"logtrace": "HOST UNREACHABLE", "status": "UNKNOWN"}
+    # TODO: Remove this if no global object is needed in the following methods.
+    # try:
+    #     conf = {'bootstrap.servers': config['broker']}
+    #     producer = Producer(**conf)
+    #
+    # except Exception as ex:
+    #     e, _, ex_traceback = sys.exc_info()
+    #     log_traceback(log, ex, ex_traceback)
+    #     return {"logtrace": "HOST UNREACHABLE", "status": "UNKNOWN"}
 
     # ------------------------- Switch options ------------------------- #
-    if config['producelines']:
-        publish_lines(producer, config['topic'])
-
-    if config['listtopics']:
-        a = create_admin_client(config['broker'])
-        list_topics(a, config['topic'])
-
-    if config['deletetopic']:
-        a = create_admin_client(config['broker'])
-        delete_topic(a, config['topic'])
-
-    if config['describe'] != 'unknown':
-        a = create_admin_client(config['broker'])
-        describe_configs(a, config['describe'], config['configfilter'])
+    # TODO: I think here we don't need ifs. All the hardware checks need to be done.
+    # if config['producelines']:
+    #     publish_lines(producer, config['topic'])
+    #
+    # if config['listtopics']:
+    #     a = create_admin_client(config['broker'])
+    #     list_topics(a, config['topic'])
+    #
+    # if config['deletetopic']:
+    #     a = create_admin_client(config['broker'])
+    #     delete_topic(a, config['topic'])
+    #
+    # if config['describe'] != 'unknown':
+    #     a = create_admin_client(config['broker'])
+    #     describe_configs(a, config['describe'], config['configfilter'])
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -77,15 +75,19 @@ def check_hardware(config):
     return {"logtrace": log_trace, "status": status}
 
 
+# TODO: Implement here one method for each hardware check
+
+
 def main(args, loglevel):
     if args.logging:
-        logging.basicConfig(filename=logfile, format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                            level=loglevel)
+        logging.basicConfig(filename=logfile, format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', level=loglevel)
     logging.info('Started check_hardware')
     log.debug("------------------ Reading config ------------------")
 
     config = {
-        'configfile': args.configfile
+        'configfile': args.configfile,
+        'type': args.type,
+        'fqdn': args.fqdn,
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
@@ -101,15 +103,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
     parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + version)
 
-    parser.add_argument('-c', '--configfile', help='Configuration File (.json).', type=str, default="none",
-                        required=True)
-    parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const',
-                        const=True, default=False)
+    # TODO: default="none" or default=None or without default?
+    parser.add_argument('-c', '--configfile', help='Configuration file path (.json).', type=str, default=None, required=True)
+    parser.add_argument('-t', '--type', help='Machine type (i.e. kafka).', type=str, default=None, required=True)
+    parser.add_argument('-f', '--fqdn', help='Fully Qualified Domain Name.', type=str, default=None, required=True)
+
+    parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()
-    verbosity.add_argument('-v', '--verbose', help='increase output verbosity', action='store_const',
-                           const=logging.DEBUG, default=logging.INFO)
-    verbosity.add_argument('-q', '--quiet', help='hide any debug exit', dest='verbose', action='store_const',
-                           const=logging.WARNING)
+    verbosity.add_argument('-v', '--verbose', help='increase output verbosity', action='store_const', const=logging.DEBUG, default=logging.INFO)
+    verbosity.add_argument('-q', '--quiet', help='hide any debug exit', dest='verbose', action='store_const', const=logging.WARNING)
     return parser.parse_args()
 
 

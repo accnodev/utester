@@ -120,18 +120,6 @@ def hello_redis(redis):
         print(e)
 
 
-def publish_lines(producer, topic):
-    # Read lines from stdin, produce each line to Kafka
-    print("Type some lines... [ctrl-c] to exit.")
-    for line in sys.stdin:
-        try:
-            # Produce line (without newline)
-            producer.produce(topic, line.rstrip(), callback=acked)
-        except BufferError:
-            sys.stderr.write('%% Local producer queue is full (%d messages awaiting delivery): try again\n' %
-                             len(p))
-        producer.poll(0)
-
 def main(args, loglevel):
     if args.logging:
         logging.basicConfig(filename=logfile, format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', level=loglevel)
@@ -139,11 +127,12 @@ def main(args, loglevel):
     log.debug("------------------ Reading config ------------------")
 
 
-    config = {'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
-              'hellotest': args.hellotest,
-              'sslconnection': args.sslconnection,
-              'getkey': args.getkey
-              }
+    config = {
+        'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
+        'hellotest': args.hellotest,
+        'sslconnection': args.sslconnection,
+        'getkey': args.getkey
+    }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
     _info = send_to_redis(config)
