@@ -1,19 +1,23 @@
 {
-    "utHardware": {
-        "fs": ['fs1', 'fs2', 'fs3'],
-        "fqdn": [""], // ec2-metadata --local-hostname
-        ""
-    },
-    "utConfig": {
-        "metrics": ":9100/metrics"
-    },
-    "brookers": "18.185.148.220:9092",
-    "scheme_registry": "http://18.185.148.220:8081",
-    "topic": "videocap10",
-    "camvalue": "0",
-    "group_id": "groupid",
-    "params" : {
-        "message.max.bytes": 3000000
-    },
-    "avsc_dir" : "frameproducers/avrodefs"
+    "utHardware": [
+        {
+            "type" : "kafka",
+            "hardware" : {
+                "fs": ["fs1", "fs2", "fs3"],
+                "Ingress" : [2888, 9093, 3888, 2181, 9092],
+                "Egress" : [0],
+                "etchost": {
+                    "ip": "127.0.0.1",
+                    "fqdn": "<fqdn>"
+                },
+                "instance_type": "m5.large",
+                "certs": "/some/path/to/cert.crt",
+                "tz": "Europe/Madrid",
+                "ntpd": "Active: active (running)"
+            },
+            "config": {
+                "metrics": ["<fqdn>:9100/metrics", "Metrics: <fqdn>:9101/metrics"]
+            }
+        }
+    ]
 }
