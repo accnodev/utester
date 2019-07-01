@@ -28,14 +28,13 @@ import logging
 import json
 import socket
 
-from pathlib import Path
 from argparse import RawTextHelpFormatter
 from typing import List, Dict
 
 from helpers.utils import *
 #from helpers.hardware import *
 
-log = logging.getLogger(Path(__file__).stem)
+log = logging.getLogger(os.path.splitext(__file__)[0])
 logfile = 'operations.log'
 version = "1.0"
 
