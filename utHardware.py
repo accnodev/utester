@@ -26,10 +26,11 @@ Example:
 import argparse
 import logging
 import json
+import socket
 
 from pathlib import Path
 from argparse import RawTextHelpFormatter
-from typing import List
+from typing import List, Dict
 
 from helpers.utils import *
 #from helpers.hardware import *
@@ -39,69 +40,89 @@ logfile = 'operations.log'
 version = "1.0"
 
 
-def check_hardware(config):
+def check_hardware(config: Dict):
     log.debug("------------------ Begin check_hardware ------------------")
     log_trace = 'None'
     status = 'Ok'
 
-    # Parse the json config.global.json file
-    # TODO: Surround with try catch block?
-    with open(config['configfile']) as configfile:
-        configfile_json = json.load(configfile)
-
-    # Obtain the JSON object with the utHardware configuration
-    uthardware_config = configfile_json['utHardware']
-
     # Obtain the configuration for the machine type specified in the CLI arguments
     machine_type = config['type']
-    machine_uthardware_config = next(filter(lambda machine_conf: machine_conf['type'] == machine_type, uthardware_config))
+    machine_uthardware_config = next(filter(lambda machine_conf: machine_conf['type'] == machine_type, config['uthardwareconfig']))
     assert type(machine_uthardware_config) == dict
     assert machine_uthardware_config['type'] == machine_type
 
-    # ------------------------- Switch options ------------------------- #
-    if machine_type in ['kafka', 'striim', 'psql', 'emr']:
-        check_fs(machine_uthardware_config['hardware']['fs'])
-    # ------------------------------------------------------------------ #
-
-
-    # TODO: Remove this if no global object is needed in the following methods.
-    # try:
-    #     conf = {'bootstrap.servers': config['broker']}
-    #     producer = Producer(**conf)
-    #
-    # except Exception as ex:
-    #     e, _, ex_traceback = sys.exc_info()
-    #     log_traceback(log, ex, ex_traceback)
-    #     return {"logtrace": "HOST UNREACHABLE", "status": "UNKNOWN"}
+    # Obtain the fully qualified domain name
+    fqdn = socket.getfqdn()
 
     # ------------------------- Switch options ------------------------- #
-    # if config['producelines']:
-    #     publish_lines(producer, config['topic'])
-    #
-    # if config['listtopics']:
-    #     a = create_admin_client(config['broker'])
-    #     list_topics(a, config['topic'])
-    #
-    # if config['deletetopic']:
-    #     a = create_admin_client(config['broker'])
-    #     delete_topic(a, config['topic'])
-    #
-    # if config['describe'] != 'unknown':
-    #     a = create_admin_client(config['broker'])
-    #     describe_configs(a, config['describe'], config['configfilter'])
-    # ------------------------------------------------------------------ #
+    if machine_type == 'bastion':
+        check_bastion(machine_uthardware_config)
 
+    if machine_type == 'kafka':
+        check_kafka(machine_uthardware_config, fqdn)
+
+    if machine_type == 'striim':
+        check_striim(machine_uthardware_config, fqdn)
+
+    if machine_type == 'psql':
+        check_psql(machine_uthardware_config, fqdn)
+
+    if machine_type == 'emr':
+        check_emr(machine_uthardware_config, fqdn)
+
+    if machine_type == 'redis':
+        check_redis(machine_uthardware_config)
+
+    # TODO: In the image there is another psql
+    # ------------------------------------------------------------------ #
+    
     log_trace = "Send " + status + " | " + log_trace
     log.debug("------------------ End check_hardware ------------------")
     return {"logtrace": log_trace, "status": status}
 
 
-# Methods that check the hardware configuration one by one #
+# ---------------- BEGIN Machine checks ---------------- #
 
-def check_fs(fs: List):
+def check_bastion(bastion_config):
     # TODO
     pass
 
+
+def check_kafka(kafka_config, fqdn):
+    check_fs(kafka_config['hardware']['fs'])
+
+
+def check_striim(striim_config, fqdn):
+    # TODO
+    pass
+
+
+def check_psql(psql_config, fqdn):
+    # TODO
+    pass
+
+
+def check_emr(emr_config, fqdn):
+    # TODO
+    pass
+
+
+def check_redis(redis_config):
+    # TODO
+    pass
+
+
+# ---------------- END Machine checks ---------------- #
+
+# ---------------- BEGIN Unit checks ---------------- #
+
+
+def check_fs(mountpoints: List[str]):
+    # TODO
+    pass
+
+
+# ---------------- END Unit checks ---------------- #
 
 def main(args, loglevel):
     if args.logging:
@@ -109,10 +130,14 @@ def main(args, loglevel):
     logging.info('Started check_hardware')
     log.debug("------------------ Reading config ------------------")
 
+    # Parse the configfile
+    configfile_json = json.load(open(os.path.realpath(args.configfile)))
+    # Obtain the JSON object with the utHardware configuration
+    uthardwareconfig = configfile_json['utHardware']
+
     config = {
-        'configfile': args.configfile,
+        'uthardwareconfig': uthardwareconfig,
         'type': args.type,
-        'fqdn': args.fqdn,
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
@@ -131,7 +156,6 @@ def parse_args():
     # TODO: default="none" or default=None or without default?
     parser.add_argument('-c', '--configfile', help='Configuration file path (.json).', type=str, default=None, required=True)
     parser.add_argument('-t', '--type', help='Machine type (i.e. kafka).', type=str, default=None, required=True)
-    parser.add_argument('-f', '--fqdn', help='Fully Qualified Domain Name.', type=str, default=None, required=True)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()
