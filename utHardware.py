@@ -53,7 +53,7 @@ def check_hardware(config: Dict):
     assert machine_uthardware_config['type'] == machine_type
 
     # Obtain the fully qualified domain name
-    fqdn = socket.getfqdn()
+    fqdn: str = socket.getfqdn() # TODO: Another option: fqdn = execute_shell_command_and_return_stdout("ec2-metadata --local-hostname").split()[1]
 
     # ------------------------- Switch options ------------------------- #
     if machine_type == 'bastion':
@@ -89,21 +89,25 @@ def check_bastion(bastion_config):
     pass
 
 
-def check_kafka(kafka_config, fqdn):
+def check_kafka(kafka_config, fqdn: str):
     check_fs(kafka_config['hardware']['fs'])
+    # TODO: check_dns()
+    # TODO: check_ingress()
+    # TODO: check_egress()
+    check_etc_hosts(fqdn)
 
 
-def check_striim(striim_config, fqdn):
+def check_striim(striim_config, fqdn: str):
     # TODO
     pass
 
 
-def check_psql(psql_config, fqdn):
+def check_psql(psql_config, fqdn: str):
     # TODO
     pass
 
 
-def check_emr(emr_config, fqdn):
+def check_emr(emr_config, fqdn: str):
     # TODO
     pass
 
@@ -143,6 +147,25 @@ def check_fs(required_mountpoints: List[str]):
     # Print the df command info
     print("\nPartitions size:")
     print(os.system("df -h --output=source,size,pcent"))
+
+
+def check_etc_hosts(fqdn: str):
+    etc_hosts = execute_shell_command_and_return_stdout_as_lines_array("cat /etc/hosts")
+
+    # Remove empty lines and comment lines
+    etc_hosts = filter(lambda line: len(line) > 0 and line[0] != '#', etc_hosts)
+
+    # Keep only the lines that refer to the loopback
+    etc_hosts = filter(lambda line: line.split()[0] == "127.0.0.1", etc_hosts)
+
+    # Check that the fqdn is in the second position of one of the remaining lines
+    for line in etc_hosts:
+        if line.split()[1] == fqdn:
+            print("etc/hosts file is correctly configured. Loopback IP is related to the FQDN.")
+            return
+
+    sys.stderr.write("etc/hosts file isn't configured correctly. Loopback IP isn't related to the FQDN. "
+                     "Add this line to the /etc/hosts file: '127.0.0.1    {}'\n".format(fqdn))
 
 
 # ---------------- END Unit checks ---------------- #

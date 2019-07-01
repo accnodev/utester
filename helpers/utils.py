@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # # -*- coding: utf-8 -*-
-
+import subprocess
 import sys
 import os
 import traceback
+
+
 # from sys import exit
 # from requests.exceptions import RequestException
 
@@ -19,7 +21,7 @@ def log_traceback(log, ex, ex_traceback=None):
     if ex_traceback is None:
         ex_traceback = ex.__traceback__
     tb_lines = [line.rstrip('\n') for line in
-                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
+                traceback.format_exception(ex.__class__, ex, ex_traceback)]
     log.error(tb_lines)
 
 
@@ -46,3 +48,9 @@ def load_schema_file(fname):
         return f.read()
 
 
+def execute_shell_command_and_return_stdout(command: str):
+    return subprocess.run(command.split(), stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+
+def execute_shell_command_and_return_stdout_as_lines_array(command: str):
+    return execute_shell_command_and_return_stdout(command).split('\n')
