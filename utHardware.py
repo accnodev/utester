@@ -31,6 +31,8 @@ import socket
 from argparse import RawTextHelpFormatter
 from typing import List, Dict
 
+import psutil
+
 from helpers.utils import *
 #from helpers.hardware import *
 
@@ -116,9 +118,31 @@ def check_redis(redis_config):
 # ---------------- BEGIN Unit checks ---------------- #
 
 
-def check_fs(mountpoints: List[str]):
-    # TODO
-    pass
+def check_fs(required_mountpoints: List[str]):
+    mountpoint_partitions = set()
+
+    for required_mountpoint in required_mountpoints:
+        try:
+            # Obtain the disk partition where the required mountpoint is mounted (if exists)
+            mounted_disk_partition = next(filter(lambda dp: dp.mountpoint == required_mountpoint, psutil.disk_partitions()))
+            # If the mountpoint is not mounted, a StopIteration exception is raised
+
+            # Check that the required mountpoint isn't mounted in the same partition as another required mountpoint
+            if mounted_disk_partition.device in mountpoint_partitions:
+                # TODO: Print, sys.stderr.write() or raise exception?
+                sys.stderr.write("The required mountpoint {} is mounted in the same partition ({}) as another required mountpoint.\n"
+                                 .format(required_mountpoint, mounted_disk_partition.device))
+            else:
+                print("The required mountpoint {} is correctly mounted."
+                      .format(required_mountpoint, mounted_disk_partition.device))
+                mountpoint_partitions.add(mounted_disk_partition.device)
+        except StopIteration as e:
+            # TODO: Print, sys.stderr.write() or raise exception?
+            sys.stderr.write("The required mountpoint {} is not mounted.\n".format(required_mountpoint))
+
+    # Print the df command info
+    print("\nPartitions size:")
+    print(os.system("df -h --output=source,size,pcent"))
 
 
 # ---------------- END Unit checks ---------------- #
