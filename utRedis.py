@@ -27,14 +27,13 @@ import logging
 import os
 import sys
 
-from pathlib import Path
 from argparse import RawTextHelpFormatter
 
 import redis
 from helpers.utils import *
 # from helpers.redis import *
 
-log = logging.getLogger(Path(__file__).stem)
+log = logging.getLogger(os.path.splitext(__file__)[0])
 logfile = 'operations.log'
 version = "1.0"
 

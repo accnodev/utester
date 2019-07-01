@@ -27,7 +27,6 @@ import logging
 import os
 import sys
 
-from pathlib import Path
 from argparse import RawTextHelpFormatter
 
 from confluent_kafka import Producer
@@ -36,7 +35,8 @@ from confluent_kafka import KafkaException
 from helpers.utils import *
 from helpers.kafka import *
 
-log = logging.getLogger(Path(__file__).stem)
+
+log = logging.getLogger(os.path.splitext(__file__)[0])
 logfile = 'operations.log'
 version = "1.0"
 
