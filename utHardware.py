@@ -25,9 +25,11 @@ Example:
 
 import argparse
 import logging
+import json
 
 from pathlib import Path
 from argparse import RawTextHelpFormatter
+from typing import List
 
 from helpers.utils import *
 #from helpers.hardware import *
@@ -42,6 +44,26 @@ def check_hardware(config):
     log_trace = 'None'
     status = 'Ok'
 
+    # Parse the json config.global.json file
+    # TODO: Surround with try catch block?
+    with open(config['configfile']) as configfile:
+        configfile_json = json.load(configfile)
+
+    # Obtain the JSON object with the utHardware configuration
+    uthardware_config = configfile_json['utHardware']
+
+    # Obtain the configuration for the machine type specified in the CLI arguments
+    machine_type = config['type']
+    machine_uthardware_config = next(filter(lambda machine_conf: machine_conf['type'] == machine_type, uthardware_config))
+    assert type(machine_uthardware_config) == dict
+    assert machine_uthardware_config['type'] == machine_type
+
+    # ------------------------- Switch options ------------------------- #
+    if machine_type in ['kafka', 'striim', 'psql', 'emr']:
+        check_fs(machine_uthardware_config['hardware']['fs'])
+    # ------------------------------------------------------------------ #
+
+
     # TODO: Remove this if no global object is needed in the following methods.
     # try:
     #     conf = {'bootstrap.servers': config['broker']}
@@ -53,7 +75,6 @@ def check_hardware(config):
     #     return {"logtrace": "HOST UNREACHABLE", "status": "UNKNOWN"}
 
     # ------------------------- Switch options ------------------------- #
-    # TODO: I think here we don't need ifs. All the hardware checks need to be done.
     # if config['producelines']:
     #     publish_lines(producer, config['topic'])
     #
@@ -75,7 +96,11 @@ def check_hardware(config):
     return {"logtrace": log_trace, "status": status}
 
 
-# TODO: Implement here one method for each hardware check
+# Methods that check the hardware configuration one by one #
+
+def check_fs(fs: List):
+    # TODO
+    pass
 
 
 def main(args, loglevel):
