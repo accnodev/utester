@@ -95,6 +95,7 @@ def check_kafka(kafka_config, fqdn: str):
     # TODO: check_ingress()
     # TODO: check_egress()
     check_etc_hosts(fqdn)
+    check_instance_type(kafka_config['hardware']['instance_type'])
 
 
 def check_striim(striim_config, fqdn: str):
@@ -149,6 +150,8 @@ def check_fs(required_mountpoints: List[str]):
     print(os.system("df -h --output=source,size,pcent"))
 
 
+# TODO: If we have to check more than the loopback IP, then the config.global.json file needs to be used.
+#  If not, the etchost attribute can be delated from the json.
 def check_etc_hosts(fqdn: str):
     etc_hosts = execute_shell_command_and_return_stdout_as_lines_array("cat /etc/hosts")
 
@@ -166,6 +169,15 @@ def check_etc_hosts(fqdn: str):
 
     sys.stderr.write("etc/hosts file isn't configured correctly. Loopback IP isn't related to the FQDN. "
                      "Add this line to the /etc/hosts file: '127.0.0.1    {}'\n".format(fqdn))
+
+
+def check_instance_type(expected_instance_type: str):
+    instance_type = execute_shell_command_and_return_stdout_as_lines_array("ec2-metadata --instance-type").split()[1]
+    if instance_type == expected_instance_type:
+        print("Instance type is OK")
+    else:
+        sys.stderr.write("Instance type is WRONG. Expected: {}. Current {}.\n"
+                         .format(expected_instance_type, instance_type))
 
 
 # ---------------- END Unit checks ---------------- #
