@@ -98,6 +98,7 @@ def check_kafka(kafka_config, fqdn: str):
     # TODO: check_egress()
     check_etc_hosts(fqdn)
     check_certs(kafka_config['hardware']['certs'])
+    check_tz(kafka_config['hardware']['tz'])
 
 
 def check_striim(striim_config, fqdn: str):
@@ -187,6 +188,14 @@ def check_certs(cert_path: str):
         print("Certificates exist")
     else:
         sys.stderr.write("Certificates doesn't exist in this path: {}.\n".format(cert_path))
+
+
+def check_tz(expected_tz: str):
+    tz = execute_shell_command_and_return_stdout('timedatectl | grep "Time zone"').split("Time zone:")[1].strip()
+    if tz == expected_tz:
+        print("Timezone is OK")
+    else:
+        sys.stderr.write("Timezone is WRONG. Expected: {}. Current: {}.\n".format(expected_tz, tz))
 
 
 # ---------------- END Unit checks ---------------- #
