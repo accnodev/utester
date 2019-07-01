@@ -90,12 +90,14 @@ def check_bastion(bastion_config):
 
 
 def check_kafka(kafka_config, fqdn: str):
+    check_instance_type(kafka_config['hardware']['instance_type'])
+
     check_fs(kafka_config['hardware']['fs'])
     # TODO: check_dns()
     # TODO: check_ingress()
     # TODO: check_egress()
     check_etc_hosts(fqdn)
-    check_instance_type(kafka_config['hardware']['instance_type'])
+    check_certs(kafka_config['hardware']['certs'])
 
 
 def check_striim(striim_config, fqdn: str):
@@ -178,6 +180,13 @@ def check_instance_type(expected_instance_type: str):
     else:
         sys.stderr.write("Instance type is WRONG. Expected: {}. Current {}.\n"
                          .format(expected_instance_type, instance_type))
+
+
+def check_certs(cert_path: str):
+    if os.path.exists(cert_path):
+        print("Certificates exist")
+    else:
+        sys.stderr.write("Certificates doesn't exist in this path: {}.\n".format(cert_path))
 
 
 # ---------------- END Unit checks ---------------- #
