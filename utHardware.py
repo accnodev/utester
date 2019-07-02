@@ -184,6 +184,7 @@ def check_instance_type(expected_instance_type: str):
 
 
 def check_certs(cert_path: str):
+    # TODO: Is there only one certificate, or we need to check more than one file?
     if os.path.exists(cert_path):
         print("Certificates exist")
     else:
@@ -196,6 +197,22 @@ def check_tz(expected_tz: str):
         print("Timezone is OK")
     else:
         sys.stderr.write("Timezone is WRONG. Expected: {}. Current: {}.\n".format(expected_tz, tz))
+
+
+def check_ntpd():
+    try:
+        ntpd_status = execute_shell_command_and_return_stdout('systemctl status ntpd | grep "Active:"').split("Active:")[1].strip()
+
+        if ntpd_status.startswith("active (running)"): # TODO: Use the value of the config file, or we always want to check that is active and running?
+            print("ntpd is active and running")
+        else:
+            sys.stderr.write("ntpd is not active and running. Current ntpd status: {}.\n".format(ntpd_status))
+    except IndexError:
+        # An IndexError can be raised by 2 reasons:
+        # * The ntpd.service could not be found by the systemctl status command
+        # * The grep command didn't find "Active:"
+        # This means that ntpd is not configured correctly
+        sys.stderr.write("ntpd.service could not be found.\n")
 
 
 # ---------------- END Unit checks ---------------- #
