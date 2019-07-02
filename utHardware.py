@@ -53,7 +53,7 @@ def check_hardware(config: Dict):
     assert machine_uthardware_config['type'] == machine_type
 
     # Obtain the fully qualified domain name
-    fqdn: str = socket.getfqdn() # TODO: Another option: fqdn = execute_shell_command_and_return_stdout("ec2-metadata --local-hostname").split()[1]
+    fqdn: str = socket.getfqdn()  # TODO: Another option: fqdn = execute_shell_command_and_return_stdout("ec2-metadata --local-hostname").split()[1]
 
     # ------------------------- Switch options ------------------------- #
     if machine_type == 'bastion':
@@ -76,7 +76,7 @@ def check_hardware(config: Dict):
 
     # TODO: In the image there is another psql
     # ------------------------------------------------------------------ #
-    
+
     log_trace = "Send " + status + " | " + log_trace
     log.debug("------------------ End check_hardware ------------------")
     return {"logtrace": log_trace, "status": status}
@@ -84,12 +84,12 @@ def check_hardware(config: Dict):
 
 # ---------------- BEGIN Machine checks ---------------- #
 
-def check_bastion(bastion_config):
+def check_bastion(bastion_config: Dict):
     # TODO
     pass
 
 
-def check_kafka(kafka_config, fqdn: str):
+def check_kafka(kafka_config: Dict, fqdn: str):
     check_instance_type(kafka_config['hardware']['instance_type'])
 
     check_fs(kafka_config['hardware']['fs'])
@@ -101,22 +101,22 @@ def check_kafka(kafka_config, fqdn: str):
     check_tz(kafka_config['hardware']['tz'])
 
 
-def check_striim(striim_config, fqdn: str):
+def check_striim(striim_config: Dict, fqdn: str):
     # TODO
     pass
 
 
-def check_psql(psql_config, fqdn: str):
+def check_psql(psql_config: Dict, fqdn: str):
     # TODO
     pass
 
 
-def check_emr(emr_config, fqdn: str):
+def check_emr(emr_config: Dict, fqdn: str):
     # TODO
     pass
 
 
-def check_redis(redis_config):
+def check_redis(redis_config: Dict):
     # TODO
     pass
 
@@ -127,6 +127,10 @@ def check_redis(redis_config):
 
 
 def check_fs(required_mountpoints: List[str]):
+    """
+    Checks that the required mountpoints exist in distinct partitions.
+    :param required_mountpoints: Required mountpoints, obtained from the configuration file.
+    """
     mountpoint_partitions = set()
 
     for required_mountpoint in required_mountpoints:
@@ -156,6 +160,10 @@ def check_fs(required_mountpoints: List[str]):
 # TODO: If we have to check more than the loopback IP, then the config.global.json file needs to be used.
 #  If not, the etchost attribute can be delated from the json.
 def check_etc_hosts(fqdn: str):
+    """
+    Checks that the /etc/hosts file contains a line that links the loopback IP with the FQDN (Fully Qualified Domain Name).
+    :param fqdn: Fully Qualified Domain Name, obtained from the configuration file.
+    """
     etc_hosts = execute_shell_command_and_return_stdout_as_lines_array("cat /etc/hosts")
 
     # Remove empty lines and comment lines
@@ -175,6 +183,10 @@ def check_etc_hosts(fqdn: str):
 
 
 def check_instance_type(expected_instance_type: str):
+    """
+    Checks that the AWS instance type (m5.large, t2.micro, etc) is the expected.
+    :param expected_instance_type: Expected AWS instance type, obtained from the configuration file.
+    """
     instance_type = execute_shell_command_and_return_stdout_as_lines_array("ec2-metadata --instance-type").split()[1]
     if instance_type == expected_instance_type:
         print("Instance type is OK")
@@ -184,6 +196,10 @@ def check_instance_type(expected_instance_type: str):
 
 
 def check_certs(cert_path: str):
+    """
+    Checks that the certificates specified in the configuration file exist.
+    :param cert_path: Path where the certificate file should be located, obtained from the configuration file.
+    """
     # TODO: Is there only one certificate, or we need to check more than one file?
     if os.path.exists(cert_path):
         print("Certificates exist")
@@ -192,6 +208,10 @@ def check_certs(cert_path: str):
 
 
 def check_tz(expected_tz: str):
+    """
+    Checks that the timezone is the same as the one specified in the configuration file.
+    :param expected_tz: Value of the expected timezone, obtained from the configuration file.
+    """
     tz = execute_shell_command_and_return_stdout('timedatectl | grep "Time zone"').split("Time zone:")[1].split()[0]
     if tz == expected_tz:
         print("Timezone is OK")
@@ -200,6 +220,9 @@ def check_tz(expected_tz: str):
 
 
 def check_ntpd():
+    """
+    Checks that the ntpd.service is active and running.
+    """
     try:
         ntpd_status = execute_shell_command_and_return_stdout('systemctl status ntpd | grep "Active:"').split("Active:")[1].strip()
 
