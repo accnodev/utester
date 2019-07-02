@@ -192,7 +192,7 @@ def check_certs(cert_path: str):
 
 
 def check_tz(expected_tz: str):
-    tz = execute_shell_command_and_return_stdout('timedatectl | grep "Time zone"').split("Time zone:")[1].strip()
+    tz = execute_shell_command_and_return_stdout('timedatectl | grep "Time zone"').split("Time zone:")[1].split()[0]
     if tz == expected_tz:
         print("Timezone is OK")
     else:
