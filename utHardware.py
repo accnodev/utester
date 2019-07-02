@@ -34,7 +34,8 @@ from typing import List, Dict
 import psutil
 
 from helpers.utils import *
-#from helpers.hardware import *
+
+# from helpers.hardware import *
 
 log = logging.getLogger(os.path.splitext(__file__)[0])
 logfile = 'operations.log'
@@ -94,7 +95,7 @@ def check_kafka(kafka_config: Dict, fqdn: str):
 
     check_fs(kafka_config['hardware']['fs'])
     # TODO: check_dns()
-    # TODO: check_ingress()
+    check_ingress(kafka_config['hardware']['ingress'])
     # TODO: check_egress()
     check_etc_hosts(fqdn)
     check_certs(kafka_config['hardware']['certs'])
@@ -155,6 +156,24 @@ def check_fs(required_mountpoints: List[str]):
     # Print the df command info
     print("\nPartitions size:")
     print(os.system("df -h --output=source,size,pcent"))
+
+
+def check_ingress(required_opened_ports: List[int]):
+    """
+    Checks that the ingress ports are opened.
+    :param required_opened_ports: Ports that are required to be opened, obtained from the configuration file.
+    """
+    netstat = execute_shell_command_and_return_stdout_as_lines_array("netstat -tunpl")[2:]  # Remove the first and the second lines
+
+    # Transform the list of lines of the netstat command to a set of opened ports
+    current_opened_ports = {line.split()[3].split(':')[-1] for line in netstat}  # The 'Local Address' column (the 4th) contains the ingress info
+
+    # For each one of the required ports, check if it's present in the current opened ports set
+    for required_opened_port in map(lambda x: str(x), required_opened_ports):
+        if required_opened_port in current_opened_ports:
+            print("The port {} is opened.".format(required_opened_port))
+        else:
+            sys.stderr.write("The port {} is NOT opened.\n".format(required_opened_port))
 
 
 # TODO: If we have to check more than the loopback IP, then the config.global.json file needs to be used.
@@ -226,7 +245,8 @@ def check_ntpd():
     try:
         ntpd_status = execute_shell_command_and_return_stdout('systemctl status ntpd | grep "Active:"').split("Active:")[1].strip()
 
-        if ntpd_status.startswith("active (running)"): # TODO: Use the value of the config file, or we always want to check that is active and running?
+        # TODO: Use the value of the config file, or we always want to check that is active and running?
+        if ntpd_status.startswith("active (running)"):
             print("ntpd is active and running")
         else:
             sys.stderr.write("ntpd is not active and running. Current ntpd status: {}.\n".format(ntpd_status))
