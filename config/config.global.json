@@ -16,7 +16,7 @@
                 "ntpd": "Active: active (running)"
             },
             "config": {
-                "metrics": ["<fqdn>:9100/metrics", "Metrics: <fqdn>:9101/metrics"]
+                "metrics": ["<fqdn>:9100/metrics", "<fqdn>:9101/metrics"]
             }
         }
     ]

@@ -27,9 +27,11 @@ import argparse
 import logging
 import json
 import socket
+import urllib.request
+import urllib.error
 
 from argparse import RawTextHelpFormatter
-from typing import List, Dict
+from typing import Dict
 
 import psutil
 
@@ -163,7 +165,7 @@ def check_ingress(required_opened_ports: List[int]):
     Checks that the ingress ports are opened.
     :param required_opened_ports: Ports that are required to be opened, obtained from the configuration file.
     """
-    netstat = execute_shell_command_and_return_stdout_as_lines_array("netstat -tunpl")[2:]  # Remove the first and the second lines
+    netstat = execute_shell_command_and_return_stdout_as_lines_list("netstat -tunpl")[2:]  # Remove the first and the second lines
 
     # Transform the list of lines of the netstat command to a set of opened ports
     current_opened_ports = {line.split()[3].split(':')[-1] for line in netstat}  # The 'Local Address' column (the 4th) contains the ingress info
@@ -183,7 +185,7 @@ def check_etc_hosts(fqdn: str):
     Checks that the /etc/hosts file contains a line that links the loopback IP with the FQDN (Fully Qualified Domain Name).
     :param fqdn: Fully Qualified Domain Name, obtained from the configuration file.
     """
-    etc_hosts = execute_shell_command_and_return_stdout_as_lines_array("cat /etc/hosts")
+    etc_hosts = execute_shell_command_and_return_stdout_as_lines_list("cat /etc/hosts")
 
     # Remove empty lines and comment lines
     etc_hosts = filter(lambda line: len(line) > 0 and line[0] != '#', etc_hosts)
@@ -206,7 +208,7 @@ def check_instance_type(expected_instance_type: str):
     Checks that the AWS instance type (m5.large, t2.micro, etc) is the expected.
     :param expected_instance_type: Expected AWS instance type, obtained from the configuration file.
     """
-    instance_type = execute_shell_command_and_return_stdout_as_lines_array("ec2-metadata --instance-type").split()[1]
+    instance_type = execute_shell_command_and_return_stdout_as_lines_list("ec2-metadata --instance-type").split()[1]
     if instance_type == expected_instance_type:
         print("Instance type is OK")
     else:
@@ -256,6 +258,31 @@ def check_ntpd():
         # * The grep command didn't find "Active:"
         # This means that ntpd is not configured correctly
         sys.stderr.write("ntpd.service could not be found.\n")
+
+
+# TODO: In which machine is this method executed? bastion?
+def check_config_metrics(fqdn: str, metrics_endpoints: List[str]):
+    """
+    Checks that the metrics endpoints are running.
+    :param fqdn: Fully Qualified Domain Name, obtained from the configuration file.
+    :param metrics_endpoints: List of metrics endpoints that must be running, obtained from the configuration file.
+    """
+    for metrics_endpoint in metrics_endpoints:
+        metrics_endpoint_with_fqdn = "http://" + metrics_endpoint.replace('<fqdn>', fqdn)
+
+        try:
+            # Make an HTTP GET request to the endpoint
+            response_code = urllib.request.urlopen(metrics_endpoint_with_fqdn).getcode()
+
+            if response_code == 200:
+                print("The metrics endpoint {} is running.".format(metrics_endpoint_with_fqdn))
+            else:
+                sys.stderr.write("The metrics endpoint {} response wasn't 200 OK. HTTP status code: {}.\n"
+                                 .format(metrics_endpoint_with_fqdn, response_code))
+
+        except urllib.error.URLError as e:
+            # If the endpoint is not running, an exception is raised
+            sys.stderr.write("The metrics endpoint {} is not running. Reason: {}.\n".format(metrics_endpoint_with_fqdn, e.reason))
 
 
 # ---------------- END Unit checks ---------------- #

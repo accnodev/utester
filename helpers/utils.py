@@ -8,6 +8,7 @@ import traceback
 
 # from sys import exit
 # from requests.exceptions import RequestException
+from typing import List
 
 
 def setPath(namespace):
@@ -48,9 +49,9 @@ def load_schema_file(fname):
         return f.read()
 
 
-def execute_shell_command_and_return_stdout(command: str):
+def execute_shell_command_and_return_stdout(command: str) -> str:
     return subprocess.run(command.split(), stdout=subprocess.PIPE).stdout.decode('utf-8')
 
 
-def execute_shell_command_and_return_stdout_as_lines_array(command: str):
+def execute_shell_command_and_return_stdout_as_lines_list(command: str) -> List[str]:
     return execute_shell_command_and_return_stdout(command).split('\n')
