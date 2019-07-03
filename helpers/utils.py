@@ -125,3 +125,10 @@ def error_message(message):
     Shows the message with an ERROR format.
     """
     sys.stderr.write("[ERROR] " + message)
+
+
+def info_message(message):
+    """
+    Shows the message with an INFO format.
+    """
+    print("[INFO] " + message)

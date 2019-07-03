@@ -156,8 +156,8 @@ def check_fs(required_mountpoints: List[str]):
             error_message("The required mountpoint {} is not mounted.\n".format(required_mountpoint))
 
     # Print the df command info
-    print("\nPartitions size:")
-    print(os.system("df -h --output=source,size,pcent"))
+    info_message("Partitions size:")
+    print(execute_shell_command_and_return_stdout("df -h --output=source,size,pcent"))
 
 
 def check_ingress(required_opened_ports: List[int]):
