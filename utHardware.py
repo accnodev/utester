@@ -146,14 +146,14 @@ def check_fs(required_mountpoints: List[str]):
 
             # Check that the required mountpoint isn't mounted in the same partition as another required mountpoint
             if mounted_disk_partition.device in mountpoint_partitions:
-                sys.stderr.write("[ERROR] The required mountpoint {} is mounted in the same partition ({}) as another required mountpoint.\n"
-                                 .format(required_mountpoint, mounted_disk_partition.device))
+                error_message("The required mountpoint {} is mounted in the same partition ({}) as another required mountpoint.\n"
+                              .format(required_mountpoint, mounted_disk_partition.device))
             else:
-                print("The required mountpoint {} is correctly mounted."
+                ok_message("The required mountpoint {} is correctly mounted."
                       .format(required_mountpoint, mounted_disk_partition.device))
                 mountpoint_partitions.add(mounted_disk_partition.device)
-        except StopIteration as e:
-            sys.stderr.write("[ERROR] The required mountpoint {} is not mounted.\n".format(required_mountpoint))
+        except StopIteration:
+            error_message("The required mountpoint {} is not mounted.\n".format(required_mountpoint))
 
     # Print the df command info
     print("\nPartitions size:")
@@ -175,9 +175,9 @@ def check_ingress(required_opened_ports: List[int]):
     # For each one of the required ports, check if it's present in the current opened ports set
     for required_opened_port in map(lambda x: str(x), required_opened_ports):
         if required_opened_port in current_opened_ports:
-            print("The port {} is opened.".format(required_opened_port))
+            ok_message("The port {} is opened.".format(required_opened_port))
         else:
-            sys.stderr.write("[ERROR] The port {} is NOT opened.\n".format(required_opened_port))
+            error_message("The port {} is NOT opened.\n".format(required_opened_port))
 
 
 # TODO: If we have to check more than the loopback IP, then the config.global.json file needs to be used.
@@ -198,11 +198,11 @@ def check_etc_hosts(fqdn: str):
     # Check that the fqdn is in the second position of one of the remaining lines
     for line in etc_hosts:
         if line.split()[1] == fqdn:
-            print("etc/hosts file is correctly configured. Loopback IP is related to the FQDN.")
+            ok_message("etc/hosts file is correctly configured. Loopback IP is related to the FQDN.")
             return
 
-    sys.stderr.write("[ERROR] etc/hosts file isn't configured correctly. Loopback IP isn't related to the FQDN. "
-                     "Add this line to the /etc/hosts file: '127.0.0.1    {}'\n".format(fqdn))
+    error_message("etc/hosts file isn't configured correctly. Loopback IP isn't related to the FQDN. "
+                  "Add this line to the /etc/hosts file: '127.0.0.1    {}'\n".format(fqdn))
 
 
 def check_instance_type(expected_instance_type: str, ec2_dummy_path: str):
@@ -213,10 +213,10 @@ def check_instance_type(expected_instance_type: str, ec2_dummy_path: str):
     """
     instance_type = execute_ec2_metadata_command_and_return_stdout("--instance-type", ec2_dummy_path).split()[1]
     if instance_type == expected_instance_type:
-        print("Instance type is OK")
+        ok_message("Instance type is OK")
     else:
-        sys.stderr.write("[ERROR] Instance type is WRONG. Expected: {}. Current {}.\n"
-                         .format(expected_instance_type, instance_type))
+        error_message("Instance type is WRONG. Expected: {}. Current {}.\n"
+                      .format(expected_instance_type, instance_type))
 
 
 def check_certs(cert_path: str):
@@ -226,9 +226,9 @@ def check_certs(cert_path: str):
     """
     # TODO: Is there only one certificate, or we need to check more than one file?
     if os.path.exists(cert_path):
-        print("Certificates exist")
+        ok_message("Certificates exist")
     else:
-        sys.stderr.write("[ERROR] Certificates doesn't exist in this path: {}.\n".format(cert_path))
+        error_message("Certificates doesn't exist in this path: {}.\n".format(cert_path))
 
 
 def check_tz(expected_tz: str):
@@ -238,9 +238,9 @@ def check_tz(expected_tz: str):
     """
     tz = execute_shell_command_and_return_stdout('timedatectl | grep "Time zone"').split("Time zone:")[1].split()[0]
     if tz == expected_tz:
-        print("Timezone is OK")
+        ok_message("Timezone is OK")
     else:
-        sys.stderr.write("[ERROR] Timezone is WRONG. Expected: {}. Current: {}.\n".format(expected_tz, tz))
+        error_message("Timezone is WRONG. Expected: {}. Current: {}.\n".format(expected_tz, tz))
 
 
 def check_ntpd():
@@ -252,15 +252,15 @@ def check_ntpd():
 
         # TODO: Use the value of the config file, or we always want to check that is active and running?
         if ntpd_status.startswith("active (running)"):
-            print("ntpd is active and running")
+            ok_message("ntpd is active and running")
         else:
-            sys.stderr.write("[ERROR] ntpd is not active and running. Current ntpd status: {}.\n".format(ntpd_status))
+            error_message("ntpd is not active and running. Current ntpd status: {}.\n".format(ntpd_status))
     except IndexError:
         # An IndexError can be raised by 2 reasons:
         # * The ntpd.service could not be found by the systemctl status command
         # * The grep command didn't find "Active:"
         # This means that ntpd is not configured correctly
-        sys.stderr.write("[ERROR] ntpd.service could not be found.\n")
+        error_message("ntpd.service could not be found.\n")
 
 
 # TODO: In which machine is this method executed? bastion?
@@ -278,14 +278,14 @@ def check_config_metrics(fqdn: str, metrics_endpoints: List[str]):
             response_code = urllib.request.urlopen(metrics_endpoint_with_fqdn).getcode()
 
             if response_code == 200:
-                print("The metrics endpoint {} is running.".format(metrics_endpoint_with_fqdn))
+                ok_message("The metrics endpoint {} is running.".format(metrics_endpoint_with_fqdn))
             else:
-                sys.stderr.write("[ERROR] The metrics endpoint {} response wasn't 200 OK. HTTP status code: {}.\n"
-                                 .format(metrics_endpoint_with_fqdn, response_code))
+                error_message("The metrics endpoint {} response wasn't 200 OK. HTTP status code: {}.\n"
+                              .format(metrics_endpoint_with_fqdn, response_code))
 
         except urllib.error.URLError as e:
             # If the endpoint is not running, an exception is raised
-            sys.stderr.write("[ERROR] The metrics endpoint {} is not running. Reason: {}.\n".format(metrics_endpoint_with_fqdn, e.reason))
+            error_message("The metrics endpoint {} is not running. Reason: {}.\n".format(metrics_endpoint_with_fqdn, e.reason))
 
 
 # ---------------- END Unit checks ---------------- #

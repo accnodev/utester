@@ -111,3 +111,17 @@ def execute_ec2_metadata_command_and_return_stdout(option: str = None, ec2_dummy
         # Execute the real command
         command = "ec2-metadata" if option is None else "ec2-metadata " + option
         return execute_shell_command_and_return_stdout(command)
+
+
+def ok_message(message):
+    """
+    Shows the message with an OK format.
+    """
+    print("[OK] " + message)
+
+
+def error_message(message):
+    """
+    Shows the message with an ERROR format.
+    """
+    sys.stderr.write("[ERROR] " + message)
