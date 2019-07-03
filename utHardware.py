@@ -26,7 +26,6 @@ Example:
 import argparse
 import logging
 import json
-import socket
 import urllib.request
 import urllib.error
 
@@ -55,15 +54,18 @@ def check_hardware(config: Dict):
     assert type(machine_uthardware_config) == dict
     assert machine_uthardware_config['type'] == machine_type
 
+    # Obtain the ec2-dummy file relative path (is None if not specified in the CLI by the user)
+    ec2_dummy_path: str = config['ec2_dummy']
+
     # Obtain the fully qualified domain name
-    fqdn: str = socket.getfqdn()  # TODO: Another option: fqdn = execute_shell_command_and_return_stdout("ec2-metadata --local-hostname").split()[1]
+    fqdn: str = execute_ec2_metadata_command_and_return_stdout("--local-hostname", ec2_dummy_path).split()[1]
 
     # ------------------------- Switch options ------------------------- #
     if machine_type == 'bastion':
         check_bastion(machine_uthardware_config)
 
     if machine_type == 'kafka':
-        check_kafka(machine_uthardware_config, fqdn)
+        check_kafka(machine_uthardware_config, fqdn, ec2_dummy_path)
 
     if machine_type == 'striim':
         check_striim(machine_uthardware_config, fqdn)
@@ -92,8 +94,8 @@ def check_bastion(bastion_config: Dict):
     pass
 
 
-def check_kafka(kafka_config: Dict, fqdn: str):
-    check_instance_type(kafka_config['hardware']['instance_type'])
+def check_kafka(kafka_config: Dict, fqdn: str, ec2_dummy_path: str):
+    check_instance_type(kafka_config['hardware']['instance_type'], ec2_dummy_path)
 
     check_fs(kafka_config['hardware']['fs'])
     # TODO: check_dns()
@@ -203,12 +205,13 @@ def check_etc_hosts(fqdn: str):
                      "Add this line to the /etc/hosts file: '127.0.0.1    {}'\n".format(fqdn))
 
 
-def check_instance_type(expected_instance_type: str):
+def check_instance_type(expected_instance_type: str, ec2_dummy_path: str):
     """
     Checks that the AWS instance type (m5.large, t2.micro, etc) is the expected.
     :param expected_instance_type: Expected AWS instance type, obtained from the configuration file.
+    :param ec2_dummy_path: Relative path to the ec2-metadata dummy file, obtained from the configuration file.
     """
-    instance_type = execute_shell_command_and_return_stdout_as_lines_list("ec2-metadata --instance-type").split()[1]
+    instance_type = execute_ec2_metadata_command_and_return_stdout("--instance-type", ec2_dummy_path).split()[1]
     if instance_type == expected_instance_type:
         print("Instance type is OK")
     else:
@@ -301,6 +304,7 @@ def main(args, loglevel):
     config = {
         'uthardwareconfig': uthardwareconfig,
         'type': args.type,
+        'ec2_dummy': args.ec2_dummy,
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
@@ -319,6 +323,9 @@ def parse_args():
     # TODO: default="none" or default=None or without default?
     parser.add_argument('-c', '--configfile', help='Configuration file path (.json).', type=str, default=None, required=True)
     parser.add_argument('-t', '--type', help='Machine type (i.e. kafka).', type=str, default=None, required=True)
+    parser.add_argument('-d', '--ec2-dummy', help='Path to the file that contains the simulation of the ec2-metadata command stdout.'
+                                                  'If present, the ec2-metadata stdout will be simulated, using the file passed to this option',
+                        type=str, default=None, required=False)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()

@@ -69,17 +69,18 @@ def execute_shell_command_and_return_stdout_as_lines_list(command: str) -> List[
 
 
 # TODO: The block-device-mapping and the key options prints it's content in more than one line, so with this option, dummy=True doesn't work correctly
-def execute_ec2_metadata_command_and_return_stdout(option: str = None, dummy=False, ec2_dummy_file_relative_path: str = None) -> str:
+def execute_ec2_metadata_command_and_return_stdout(option: str = None, ec2_dummy_file_relative_path: str = None) -> str:
     """
-    If the dummy parameter is False, executes the command ec2-metadata and returns it's stdout. \
-    If is True, simulates the stdout of the ec2-metadata, reading it's content from a file.
+    If the ec2_dummy_file_relative_path parameter is None, executes the command ec2-metadata and returns it's stdout. \
+    If the ec2_dummy_file_relative_path parameter is not None, simulates the stdout of the ec2-metadata, reading it's content from a file.
 
     :param option: Option passed to the ec2-metadata command. When it's dummy, this option must be specified with it's extended format, \
     for example, instead of '-a', use '--ami-id'.
-    :param dummy: Specifies if the command is really executed or it's stdout is simulated, reading it from a file.
-    :param ec2_dummy_file_relative_path: Relative path to the file that simulates the stdout of the ec2-metadata command. Only used if dummy is True.
-    :return: The ec2-metadata stdout (or it's simulated stdout, when dummy is True).
+    :param ec2_dummy_file_relative_path: Relative path to the file that simulates the stdout of the ec2-metadata command.
+    :return: The ec2-metadata stdout (or it's simulated stdout, when the ec2_dummy_file_relative_path parameter is not None).
     """
+    dummy = ec2_dummy_file_relative_path is not None
+
     if dummy:
         # Simulate the command stdout, reading it from a file
         with open(os.path.realpath(ec2_dummy_file_relative_path)) as ec2_dummy_file:
@@ -89,12 +90,13 @@ def execute_ec2_metadata_command_and_return_stdout(option: str = None, dummy=Fal
                 return ec2_dummy_result
             else:
                 if not option.startswith('--'):
-                    raise ValueError("When called with dummy=True, the option must be specified with it's extended format, "
-                                     "for example, instead of '-a', use '--ami-id'")
+                    raise ValueError("When called with ec2_dummy_file_relative_path not None, the option must be specified with it's extended format,"
+                                     " for example, instead of '-a', use '--ami-id'")
 
                 # Return only the line that starts with the option passed
+                ec2_dummy_result = ec2_dummy_result.split('\n')
                 try:
-                    return next(filter(lambda line: line.startswith(option[2:]), ec2_dummy_result))
+                    return next(filter(lambda line: line.startswith(option[2:] + ':'), ec2_dummy_result))
                 except StopIteration:
                     raise ValueError("The option {} is not valid.".format(option))
 
