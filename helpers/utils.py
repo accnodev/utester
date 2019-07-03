@@ -55,7 +55,14 @@ def execute_shell_command_and_return_stdout(command: str) -> str:
     :param command: Command to be executed.
     :return: Stdout of the command.
     """
-    return subprocess.run(command.split(), stdout=subprocess.PIPE).stdout.decode('utf-8')
+    # subprocess.run executes a command and waits for it to finish
+    # shell=True allows to execute pipes.
+
+    # Important note about shell=True: On POSIX with shell=True, the shell defaults to /bin/sh.
+    # If the command is a string, the string specifies the command to execute through the shell, so the string must be formatted exactly as it
+    # would be when typed at the shell prompt. This includes, for example, quoting or backslash escaping filenames with spaces in them.
+    # So, with shell=True, command must be a String, and with shell=False, command must be a list of Strings.
+    return subprocess.run(command, stdout=subprocess.PIPE, shell=True).stdout.decode('utf-8')
 
 
 def execute_shell_command_and_return_stdout_as_lines_list(command: str) -> List[str]:
