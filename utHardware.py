@@ -64,22 +64,26 @@ def check_hardware(config: Dict):
     if machine_type == 'bastion':
         check_bastion(machine_uthardware_config)
 
-    if machine_type == 'kafka':
+    elif machine_type == 'kafka':
         check_kafka(machine_uthardware_config, fqdn, ec2_dummy_path)
 
-    if machine_type == 'striim':
-        check_striim(machine_uthardware_config, fqdn)
+    elif machine_type == 'striim':
+        check_striim(machine_uthardware_config, fqdn, ec2_dummy_path)
 
-    if machine_type == 'psql':
-        check_psql(machine_uthardware_config, fqdn)
+    elif machine_type == 'psql':
+        check_psql(machine_uthardware_config, fqdn, ec2_dummy_path)
 
-    if machine_type == 'emr':
-        check_emr(machine_uthardware_config, fqdn)
+    elif machine_type == 'emr':
+        check_emr(machine_uthardware_config, fqdn, ec2_dummy_path)
 
-    if machine_type == 'redis':
-        check_redis(machine_uthardware_config)
+    elif machine_type == 'redis':
+        check_redis(machine_uthardware_config, ec2_dummy_path)
 
-    # TODO: In the image there is another psql
+    elif machine_type == 'psql2': # TODO: Change it's name
+        check_psql2(machine_uthardware_config, ec2_dummy_path)
+
+    elif machine_type == 'dns':
+        check_dns(machine_uthardware_config, ec2_dummy_path)
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -89,39 +93,89 @@ def check_hardware(config: Dict):
 
 # ---------------- BEGIN Machine checks ---------------- #
 
-def check_bastion(bastion_config: Dict):
-    # TODO
-    pass
+def check_bastion(config: Dict):
+    check_ingress(config['hardware']['ingress'])
+    # TODO: check_egress()
+    # TODO: check_test_redis()
+    # TODO: check_test_postgresql()
+    # TODO: check_test_kafka()
+    # TODO: check_test_flink()
+    # TODO: check_test_striim()
 
 
-def check_kafka(kafka_config: Dict, fqdn: str, ec2_dummy_path: str):
-    check_instance_type(kafka_config['hardware']['instance_type'], ec2_dummy_path)
+def check_kafka(config: Dict, fqdn: str, ec2_dummy_path: str):
+    check_instance_type(config['hardware']['instance_type'], ec2_dummy_path)
 
-    check_fs(kafka_config['hardware']['fs'])
-    # TODO: check_dns()
-    check_ingress(kafka_config['hardware']['ingress'])
+    check_fs(config['hardware']['fs'])
+    # DNS is tested from bastion
+    check_ingress(config['hardware']['ingress'])
     # TODO: check_egress()
     check_etc_hosts(fqdn)
-    check_certs(kafka_config['hardware']['certs'])
-    check_tz(kafka_config['hardware']['tz'])
+    check_certs(config['hardware']['certs'])
+    # TODO: Other checks
+    check_tz(config['hardware']['tz'])
 
 
-def check_striim(striim_config: Dict, fqdn: str):
-    # TODO
-    pass
+def check_striim(config: Dict, fqdn: str, ec2_dummy_path: str):
+    check_instance_type(config['hardware']['instance_type'], ec2_dummy_path)
+
+    check_fs(config['hardware']['fs'])
+    # DNS is tested from bastion
+    check_ingress(config['hardware']['ingress'])
+    # TODO: check_egress()
+    check_etc_hosts(fqdn)
+    check_certs(config['hardware']['certs'])
+    # TODO: Other checks
+    check_tz(config['hardware']['tz'])
 
 
-def check_psql(psql_config: Dict, fqdn: str):
-    # TODO
-    pass
+def check_psql(config: Dict, fqdn: str, ec2_dummy_path: str):
+    check_instance_type(config['hardware']['instance_type'], ec2_dummy_path)
+
+    check_fs(config['hardware']['fs'])
+    # DNS is tested from bastion
+    check_ingress(config['hardware']['ingress'])
+    # TODO: check_egress()
+    check_etc_hosts(fqdn)
+    check_certs(config['hardware']['certs'])
+    # TODO: Other checks
+    check_tz(config['hardware']['tz'])
 
 
-def check_emr(emr_config: Dict, fqdn: str):
-    # TODO
-    pass
+def check_emr(config: Dict, fqdn: str, ec2_dummy_path: str):
+    check_instance_type(config['hardware']['instance_type'], ec2_dummy_path)
+
+    check_fs(config['hardware']['fs'])
+    # DNS is tested from bastion
+    check_ingress(config['hardware']['ingress'])
+    # TODO: check_egress()
+    check_etc_hosts(fqdn)
+    check_certs(config['hardware']['certs'])
+    # TODO: Other checks
+    check_tz(config['hardware']['tz'])
 
 
-def check_redis(redis_config: Dict):
+def check_redis(config: Dict, ec2_dummy_path: str):
+    check_instance_type(config['hardware']['instance_type'], ec2_dummy_path)
+
+    check_ingress(config['hardware']['ingress'])
+    # TODO: check_egress()
+    check_certs(config['hardware']['certs'])
+    # TODO: Other checks
+    check_tz(config['hardware']['tz'])
+
+
+def check_psql2(config: Dict, ec2_dummy_path: str):
+    check_instance_type(config['hardware']['instance_type'], ec2_dummy_path)
+
+    check_ingress(config['hardware']['ingress'])
+    # TODO: check_egress()
+    check_certs(config['hardware']['certs'])
+    # TODO: Other checks
+    check_tz(config['hardware']['tz'])
+
+
+def check_dns(config: Dict, ec2_dummy_path: str):
     # TODO
     pass
 
@@ -227,6 +281,7 @@ def check_certs(cert_path: str):
     # TODO: Is there only one certificate, or we need to check more than one file?
     if os.path.exists(cert_path):
         ok_message("Certificates exist")
+        # TODO: Show the certificate content??
     else:
         error_message("Certificates doesn't exist in this path: {}.\n".format(cert_path))
 
