@@ -79,11 +79,11 @@ def check_hardware(config: Dict):
     elif machine_type == 'redis':
         check_redis(machine_uthardware_config, ec2_dummy_path)
 
-    elif machine_type == 'psql2': # TODO: Change it's name
+    elif machine_type == 'psql2':
         check_psql2(machine_uthardware_config, ec2_dummy_path)
 
     elif machine_type == 'dns':
-        check_dns(machine_uthardware_config, ec2_dummy_path)
+        check_dns(machine_uthardware_config)
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -95,12 +95,6 @@ def check_hardware(config: Dict):
 
 def check_bastion(config: Dict):
     check_ingress(config['hardware']['ingress'])
-    # TODO: check_egress()
-    # TODO: check_test_redis()
-    # TODO: check_test_postgresql()
-    # TODO: check_test_kafka()
-    # TODO: check_test_flink()
-    # TODO: check_test_striim()
 
 
 def check_kafka(config: Dict, fqdn: str, ec2_dummy_path: str):
@@ -109,10 +103,8 @@ def check_kafka(config: Dict, fqdn: str, ec2_dummy_path: str):
     check_fs(config['hardware']['fs'])
     # DNS is tested from bastion
     check_ingress(config['hardware']['ingress'])
-    # TODO: check_egress()
     check_etc_hosts(fqdn)
     check_certs(config['hardware']['certs'])
-    # TODO: Other checks
     check_tz(config['hardware']['tz'])
 
 
@@ -122,10 +114,8 @@ def check_striim(config: Dict, fqdn: str, ec2_dummy_path: str):
     check_fs(config['hardware']['fs'])
     # DNS is tested from bastion
     check_ingress(config['hardware']['ingress'])
-    # TODO: check_egress()
     check_etc_hosts(fqdn)
     check_certs(config['hardware']['certs'])
-    # TODO: Other checks
     check_tz(config['hardware']['tz'])
 
 
@@ -135,10 +125,8 @@ def check_psql(config: Dict, fqdn: str, ec2_dummy_path: str):
     check_fs(config['hardware']['fs'])
     # DNS is tested from bastion
     check_ingress(config['hardware']['ingress'])
-    # TODO: check_egress()
     check_etc_hosts(fqdn)
     check_certs(config['hardware']['certs'])
-    # TODO: Other checks
     check_tz(config['hardware']['tz'])
 
 
@@ -148,10 +136,8 @@ def check_emr(config: Dict, fqdn: str, ec2_dummy_path: str):
     check_fs(config['hardware']['fs'])
     # DNS is tested from bastion
     check_ingress(config['hardware']['ingress'])
-    # TODO: check_egress()
     check_etc_hosts(fqdn)
     check_certs(config['hardware']['certs'])
-    # TODO: Other checks
     check_tz(config['hardware']['tz'])
 
 
@@ -159,9 +145,7 @@ def check_redis(config: Dict, ec2_dummy_path: str):
     check_instance_type(config['hardware']['instance_type'], ec2_dummy_path)
 
     check_ingress(config['hardware']['ingress'])
-    # TODO: check_egress()
     check_certs(config['hardware']['certs'])
-    # TODO: Other checks
     check_tz(config['hardware']['tz'])
 
 
@@ -169,15 +153,27 @@ def check_psql2(config: Dict, ec2_dummy_path: str):
     check_instance_type(config['hardware']['instance_type'], ec2_dummy_path)
 
     check_ingress(config['hardware']['ingress'])
-    # TODO: check_egress()
     check_certs(config['hardware']['certs'])
-    # TODO: Other checks
     check_tz(config['hardware']['tz'])
 
 
-def check_dns(config: Dict, ec2_dummy_path: str):
-    # TODO
-    pass
+def check_dns(config: Dict):
+    """
+    Checks if the Fully Qualified Domain Names of the rest of machines are resolved by the DNS.
+    """
+    fqdns: List[str] = config['fqdns']
+
+    # For each fqdn, check if the dig command has the answer section.
+    # If the fqdn is not resolved, the answer section doesn't appear (authority section appears instead).
+    for fqdn in fqdns:
+        dig_result = execute_shell_command_and_return_stdout_as_lines_list("dig " + fqdn)
+        try:
+            next(filter(lambda line: line.startswith(";; ANSWER SECTION:"), dig_result))
+            # Here, the answer section appeared
+            ok_message("The fqdn '{}' is resolved by the DNS.".format(fqdn))
+        except StopIteration:
+            # If the filter object is empty, the answer section didn't appear
+            error_message("The fqdn '{}' is NOT resolved by the DNS.\n".format(fqdn))
 
 
 # ---------------- END Machine checks ---------------- #
@@ -204,7 +200,7 @@ def check_fs(required_mountpoints: List[str]):
                               .format(required_mountpoint, mounted_disk_partition.device))
             else:
                 ok_message("The required mountpoint {} is correctly mounted."
-                      .format(required_mountpoint, mounted_disk_partition.device))
+                           .format(required_mountpoint, mounted_disk_partition.device))
                 mountpoint_partitions.add(mounted_disk_partition.device)
         except StopIteration:
             error_message("The required mountpoint {} is not mounted.\n".format(required_mountpoint))
@@ -234,8 +230,6 @@ def check_ingress(required_opened_ports: List[int]):
             error_message("The port {} is NOT opened.\n".format(required_opened_port))
 
 
-# TODO: If we have to check more than the loopback IP, then the config.global.json file needs to be used.
-#  If not, the etchost attribute can be delated from the json.
 def check_etc_hosts(fqdn: str):
     """
     Checks that the /etc/hosts file contains a line that links the loopback IP with the FQDN (Fully Qualified Domain Name).
@@ -278,7 +272,6 @@ def check_certs(cert_path: str):
     Checks that the certificates specified in the configuration file exist.
     :param cert_path: Path where the certificate file should be located, obtained from the configuration file.
     """
-    # TODO: Is there only one certificate, or we need to check more than one file?
     if os.path.exists(cert_path):
         ok_message("Certificates exist")
         # TODO: Show the certificate content??
@@ -298,6 +291,7 @@ def check_tz(expected_tz: str):
         error_message("Timezone is WRONG. Expected: {}. Current: {}.\n".format(expected_tz, tz))
 
 
+# TODO: This method is not currently used. In which machine is this method executed?
 def check_ntpd():
     """
     Checks that the ntpd.service is active and running.
@@ -305,7 +299,6 @@ def check_ntpd():
     try:
         ntpd_status = execute_shell_command_and_return_stdout('systemctl status ntpd | grep "Active:"').split("Active:")[1].strip()
 
-        # TODO: Use the value of the config file, or we always want to check that is active and running?
         if ntpd_status.startswith("active (running)"):
             ok_message("ntpd is active and running")
         else:
@@ -318,7 +311,7 @@ def check_ntpd():
         error_message("ntpd.service could not be found.\n")
 
 
-# TODO: In which machine is this method executed? bastion?
+# TODO: This method is not currently used. In which machine is this method executed? bastion?
 def check_config_metrics(fqdn: str, metrics_endpoints: List[str]):
     """
     Checks that the metrics endpoints are running.
@@ -375,9 +368,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
     parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + version)
 
-    # TODO: default="none" or default=None or without default?
     parser.add_argument('-c', '--configfile', help='Configuration file path (.json).', type=str, default=None, required=True)
-    parser.add_argument('-t', '--type', help='Machine type (i.e. kafka).', type=str, default=None, required=True)
+    parser.add_argument('-t', '--type', help='Machine type (i.e. kafka). Use dns to check DNS from bastion.', type=str, default=None, required=True)
     parser.add_argument('-d', '--ec2-dummy', help='Path to the file that contains the simulation of the ec2-metadata command stdout.'
                                                   'If present, the ec2-metadata stdout will be simulated, using the file passed to this option',
                         type=str, default=None, required=False)
