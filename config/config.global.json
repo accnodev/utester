@@ -15,7 +15,7 @@
         },
         {
             "type": "dns",
-            "fqdns": ["localhost", "fqdn1", "fqdn2"]
+            "fqdns": ["localhost", "fqdn1", "fqdn2", "zara.com"]
         }
     ]
 }

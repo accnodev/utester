@@ -1,25 +1,30 @@
 #!/usr/bin/env python
 # # -*- coding: utf-8 -*-
 
-# TODO: Modify the help message based on all the hardware checks
 """
 Unit test the hardware of a machine.
- - Test Producer from command lines. This will autocreate a topic named 'utester'
- - Test Delete topic
- - Test Describe resource with filter
+Possible machine types:
+ - bastion
+ - kafka
+ - striim
+ - psql
+ - emr
+ - redis
+ - psql2
+ - dns: This type checks that the fqdns are resolved by the DNS. Must be executed from bastion.
 
-To test consumer is working, on kafka server try:
-    kafka-console-consumer --bootstrap-server localhost:9092 --topic utester --from-beginning
+If this file is NOT executed in an EC2 instance, the --ec2-dummy must be used,
+pointing to a file that simulates the ec2-metadata command.
 
-Example:
-    Create lines
-        python utKafka.py -b 192.168.56.51:9092 -pl
+Examples:
+    Check an EC2 kafka machine
+        python utHardware.py --configfile config/config.global.json --type kafka
 
-    Describe topic
-        python utKafka.py -b 192.168.56.51:9092 -d topic -cf utester
+    Check a kafka machine that is NOT an EC2 instance (for testing purposes, for example)
+        python utHardware.py --configfile config/config.global.json --type kafka --dummy config/ec2-metadata-dummy.global.txt
 
-    Delete Topic
-        python utKafka.py -b 192.168.56.51:9092 -dt
+    Check that the fqdns of the rest of machines are resolved by the DNS, from the EC2 bastion machine
+        python utHardware.py --configfile config/config.global.json --type dns
 
 """
 
@@ -35,8 +40,6 @@ from typing import Dict
 import psutil
 
 from helpers.utils import *
-
-# from helpers.hardware import *
 
 log = logging.getLogger(os.path.splitext(__file__)[0])
 logfile = 'operations.log'
@@ -274,7 +277,6 @@ def check_certs(cert_path: str):
     """
     if os.path.exists(cert_path):
         ok_message("Certificates exist")
-        # TODO: Show the certificate content??
     else:
         error_message("Certificates doesn't exist in this path: {}.\n".format(cert_path))
 
@@ -371,7 +373,7 @@ def parse_args():
     parser.add_argument('-c', '--configfile', help='Configuration file path (.json).', type=str, default=None, required=True)
     parser.add_argument('-t', '--type', help='Machine type (i.e. kafka). Use dns to check DNS from bastion.', type=str, default=None, required=True)
     parser.add_argument('-d', '--ec2-dummy', help='Path to the file that contains the simulation of the ec2-metadata command stdout.'
-                                                  'If present, the ec2-metadata stdout will be simulated, using the file passed to this option',
+                                                  'If present, the ec2-metadata stdout will be simulated, using the file passed to this option.',
                         type=str, default=None, required=False)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
