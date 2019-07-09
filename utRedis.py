@@ -18,14 +18,16 @@ Example:
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl
     Connect without SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow`
-    Hello test
+    Hello test with SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -ht
     Get all keys
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -ak
-    Flush all (delete all keys in all databases)
+    Flush all (delete all keys in all databases) with SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -fa
     Get key with SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -gk msg:hello
+    Delete key with SSL
+        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk msg:hello
 
 """
 
@@ -58,14 +60,17 @@ def send_to_redis(config):
     if config['hellotest']:
         hello_redis(redis)
 
-    elif config['getkey']:
-        get_key(redis, config['getkey'])
-
     elif config['allkeys']:
         get_all_keys(redis)
 
     elif config['flushall']:
         flush_all(redis)
+
+    elif config['getkey']:
+        get_key(redis, config['getkey'])
+
+    elif config['delkey']:
+        delete_key(redis, config['delkey'])
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -101,14 +106,6 @@ def connect_redis_with_ssl(config):
     return conn
 
 
-def get_key(redis: redis.Redis, key):
-    try:
-        msg = redis.get(key)
-        print("msg:", str(msg))
-    except Exception as e:
-        print(e)
-
-
 def get_all_keys(redis: redis.Redis):
     for key in redis.scan_iter():
         print(key)
@@ -121,6 +118,21 @@ def flush_all(redis: redis.Redis):
     redis.flushall()
 
 
+def get_key(redis: redis.Redis, key):
+    try:
+        msg = redis.get(key)
+        print("msg:", str(msg))
+    except Exception as e:
+        error_message(e)
+
+
+def delete_key(redis: redis.Redis, key):
+    try:
+        redis.delete(key)
+    except Exception as e:
+        error_message(e)
+
+
 def hello_redis(redis):
     try:
         # step 1: Set the hello message in Redis
@@ -130,7 +142,7 @@ def hello_redis(redis):
         msg = redis.get("msg:hello")
         print("msg:", str(msg))
     except Exception as e:
-        print(e)
+        error_message(e)
 
 
 def main(args, loglevel):
@@ -171,6 +183,7 @@ def parse_args():
     parser.add_argument('-ak', '--allkeys', help='Show all keys', action='store_const', const=True, default=None)
     parser.add_argument('-fa', '--flushall', help='Delete all keys in all databases', action='store_const', const=True, default=None)
     parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
+    parser.add_argument('-dk', '--delkey', help='Delete key', type=str, default=None)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()
