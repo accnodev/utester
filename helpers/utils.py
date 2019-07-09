@@ -75,7 +75,7 @@ def execute_shell_command_and_return_stdout_as_lines_list(command: str) -> List[
     return execute_shell_command_and_return_stdout(command).split('\n')
 
 
-# TODO: The block-device-mapping and the key options prints it's content in more than one line, so with this option, dummy=True doesn't work correctly
+# WARN: The block-device-mapping and the key options print it's content in more than one line, so with this option, dummy=True doesn't work correctly
 def execute_ec2_metadata_command_and_return_stdout(option: str = None, ec2_dummy_file_relative_path: str = None) -> str:
     """
     If the ec2_dummy_file_relative_path parameter is None, executes the command ec2-metadata and returns it's stdout. \

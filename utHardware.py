@@ -13,8 +13,7 @@ Possible machine types:
  - psql2
  - dns: This type checks that the fqdns are resolved by the DNS. Must be executed from bastion.
 
-If this file is NOT executed in an EC2 instance, the --ec2-dummy must be used,
-pointing to a file that simulates the ec2-metadata command.
+If this file is NOT executed in an EC2 instance, the --ec2-dummy must be used, pointing to a file that simulates the ec2-metadata command.
 
 Examples:
     Check an EC2 kafka machine
