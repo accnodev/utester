@@ -109,15 +109,21 @@ def connect_redis_with_ssl(config):
 
 
 def get_all_keys(redis: redis.Redis):
-    for key in redis.scan_iter():
-        print(key)
+    try:
+        for key in redis.scan_iter():
+            print(key)
+    except Exception as e:
+        error_message(e)
 
 
 def flush_all(redis: redis.Redis):
     """
     Delete all keys in all databases.
     """
-    redis.flushall()
+    try:
+        redis.flushall()
+    except Exception as e:
+        error_message(e)
 
 
 def get_key(redis: redis.Redis, key):
