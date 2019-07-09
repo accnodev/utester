@@ -10,6 +10,7 @@ Functionalities:
  - Get all keys.
  - Flush all.
  - Get by ky. Get message by key.
+ - Delete key (or keys).
 
 In order to work with password, store it under /root/psa/.psa.shadow.
 
@@ -26,8 +27,9 @@ Example:
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -fa
     Get key with SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -gk msg:hello
-    Delete key with SSL
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk msg:hello
+    Delete key (or keys, separated by spaces) with SSL
+        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk key1
+        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk key1 key2 key3
 
 """
 
@@ -70,7 +72,7 @@ def send_to_redis(config):
         get_key(redis, config['getkey'])
 
     elif config['delkey']:
-        delete_key(redis, config['delkey'])
+        delete_keys(redis, config['delkey'])
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -126,9 +128,9 @@ def get_key(redis: redis.Redis, key):
         error_message(e)
 
 
-def delete_key(redis: redis.Redis, key):
+def delete_keys(redis: redis.Redis, keys: List[str]):
     try:
-        redis.delete(key)
+        redis.delete(*keys)
     except Exception as e:
         error_message(e)
 
@@ -157,7 +159,8 @@ def main(args, loglevel):
         'sslconnection': args.sslconnection,
         'allkeys': args.allkeys,
         'flushall': args.flushall,
-        'getkey': args.getkey
+        'getkey': args.getkey,
+        'delkey': args.delkey,
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
@@ -183,7 +186,7 @@ def parse_args():
     parser.add_argument('-ak', '--allkeys', help='Show all keys', action='store_const', const=True, default=None)
     parser.add_argument('-fa', '--flushall', help='Delete all keys in all databases', action='store_const', const=True, default=None)
     parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
-    parser.add_argument('-dk', '--delkey', help='Delete key', type=str, default=None)
+    parser.add_argument('-dk', '--delkey', help='Delete key (or keys, separated by spaces)', nargs='+', type=str, default=None)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()
