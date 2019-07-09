@@ -8,6 +8,7 @@ Functionalities:
  - Connect without ssl.
  - Hello test. Send Hello message to Redis and get it back.
  - Get all keys.
+ - Flush all.
  - Get by ky. Get message by key.
 
 In order to work with password, store it under /root/psa/.psa.shadow.
@@ -21,6 +22,8 @@ Example:
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -ht
     Get all keys
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -ak
+    Flush all (delete all keys in all databases)
+        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -fa
     Get key with SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -gk msg:hello
 
@@ -60,6 +63,9 @@ def send_to_redis(config):
 
     elif config['allkeys']:
         get_all_keys(redis)
+
+    elif config['flushall']:
+        flush_all(redis)
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -95,7 +101,7 @@ def connect_redis_with_ssl(config):
     return conn
 
 
-def get_key(redis, key):
+def get_key(redis: redis.Redis, key):
     try:
         msg = redis.get(key)
         print("msg:", str(msg))
@@ -103,9 +109,16 @@ def get_key(redis, key):
         print(e)
 
 
-def get_all_keys(redis):
+def get_all_keys(redis: redis.Redis):
     for key in redis.scan_iter():
         print(key)
+
+
+def flush_all(redis: redis.Redis):
+    """
+    Delete all keys in all databases.
+    """
+    redis.flushall()
 
 
 def hello_redis(redis):
@@ -131,6 +144,7 @@ def main(args, loglevel):
         'hellotest': args.hellotest,
         'sslconnection': args.sslconnection,
         'allkeys': args.allkeys,
+        'flushall': args.flushall,
         'getkey': args.getkey
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
@@ -155,6 +169,7 @@ def parse_args():
     parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
     parser.add_argument('-ht', '--hellotest', help='Hello test', action='store_const', const=True, default=False)
     parser.add_argument('-ak', '--allkeys', help='Show all keys', action='store_const', const=True, default=None)
+    parser.add_argument('-fa', '--flushall', help='Delete all keys in all databases', action='store_const', const=True, default=None)
     parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
