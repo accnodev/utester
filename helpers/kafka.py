@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # # -*- coding: utf-8 -*-
 
 """
@@ -11,7 +11,9 @@
 """
 
 import sys
-from confluent_kafka.admin import AdminClient, ConfigResource, ConfigSource
+
+from confluent_kafka.admin import AdminClient, ConfigSource
+
 
 def acked(error, message):
     if error:

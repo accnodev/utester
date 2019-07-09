@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # # -*- coding: utf-8 -*-
 
 """
@@ -24,17 +24,14 @@ Example:
 
 import argparse
 import logging
-import os
-import sys
-
 from argparse import RawTextHelpFormatter
 
-from confluent_kafka import Producer
-from confluent_kafka.admin import AdminClient, ConfigResource, ConfigSource
 from confluent_kafka import KafkaException
-from helpers.utils import *
-from helpers.kafka import *
+from confluent_kafka import Producer
+from confluent_kafka.admin import ConfigResource
 
+from helpers.kafka import *
+from helpers.utils import *
 
 log = logging.getLogger(os.path.splitext(__file__)[0])
 logfile = 'operations.log'

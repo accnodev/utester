@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # # -*- coding: utf-8 -*-
 
 """
@@ -28,11 +28,10 @@ Examples:
 """
 
 import argparse
-import logging
 import json
-import urllib.request
+import logging
 import urllib.error
-
+import urllib.request
 from argparse import RawTextHelpFormatter
 from typing import Dict
 

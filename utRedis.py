@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # # -*- coding: utf-8 -*-
 
 """
@@ -35,10 +35,10 @@ Example:
 
 import argparse
 import logging
-
 from argparse import RawTextHelpFormatter
 
 import redis
+
 from helpers.utils import *
 
 log = logging.getLogger(os.path.splitext(__file__)[0])

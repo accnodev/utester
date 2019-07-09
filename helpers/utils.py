@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # # -*- coding: utf-8 -*-
+import os
 import subprocess
 import sys
-import os
 import traceback
-
 # from sys import exit
 # from requests.exceptions import RequestException
 from typing import List
