@@ -63,7 +63,7 @@ def check_hardware(config: Dict):
 
     # ------------------------- Switch options ------------------------- #
     if machine_type == 'bastion':
-        check_bastion(machine_uthardware_config)
+        check_bastion(machine_uthardware_config, fqdn)
 
     elif machine_type == 'kafka':
         check_kafka(machine_uthardware_config, fqdn, ec2_dummy_path)
@@ -94,8 +94,9 @@ def check_hardware(config: Dict):
 
 # ---------------- BEGIN Machine checks ---------------- #
 
-def check_bastion(config: Dict):
+def check_bastion(config: Dict, fqdn: str):
     check_ingress(config['hardware']['ingress'])
+    check_config_metrics(fqdn, config['config']['metrics'])
 
 
 def check_kafka(config: Dict, fqdn: str, ec2_dummy_path: str):
@@ -107,6 +108,7 @@ def check_kafka(config: Dict, fqdn: str, ec2_dummy_path: str):
     check_etc_hosts(fqdn)
     check_certs(config['hardware']['certs'])
     check_tz(config['hardware']['tz'])
+    check_config_metrics(fqdn, config['config']['metrics'])
 
 
 def check_striim(config: Dict, fqdn: str, ec2_dummy_path: str):
@@ -118,6 +120,7 @@ def check_striim(config: Dict, fqdn: str, ec2_dummy_path: str):
     check_etc_hosts(fqdn)
     check_certs(config['hardware']['certs'])
     check_tz(config['hardware']['tz'])
+    check_config_metrics(fqdn, config['config']['metrics'])
 
 
 def check_psql(config: Dict, fqdn: str, ec2_dummy_path: str):
@@ -291,7 +294,6 @@ def check_tz(expected_tz: str):
         error_message("Timezone is WRONG. Expected: {}. Current: {}.\n".format(expected_tz, tz))
 
 
-# TODO: This method is not currently used. In which machine is this method executed?
 def check_ntpd():
     """
     Checks that the ntpd.service is active and running.
@@ -311,7 +313,6 @@ def check_ntpd():
         error_message("ntpd.service could not be found.\n")
 
 
-# TODO: This method is not currently used. In which machine is this method executed? bastion?
 def check_config_metrics(fqdn: str, metrics_endpoints: List[str]):
     """
     Checks that the metrics endpoints are running.
