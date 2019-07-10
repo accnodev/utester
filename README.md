@@ -56,23 +56,75 @@ python utRedis.py --help
 ### Connect using SSL
 
 ```python
-python utRedis.py -ho 192.168.56.51 -p 6379 -ssl -p `cat /root/psa/.psa.shadow`
+python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl
 ```
 
 ### Connect without SSL
 
 ```python
-python utRedis.py -ho 192.168.56.51 -p 6379
+python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow`
 ```
 
-### Hello test
+### Hello test with SSL
 
 ```python
-python utRedis.py -ho 192.168.56.51 -p 6379 -ssl -ht -p `cat /root/psa/.psa.shadow`
+python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -ht
 ```
 
+### Get all keys
+
+```python
+python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -ak
+```
+
+### Flush all (delete all keys in all databases) with SSL
+    
+```python
+python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -fa
+```
 ### Get key with SSL
 
 ```python
-python utRedis.py -ho 192.168.56.51 -p 6379 -ssl -gk msg:hello -p `cat /root/psa/.psa.shadow`
+python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -gk msg:hello
+```
+
+### Delete key (or keys, separated by spaces) with SSL
+```python
+python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk key1
+python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk key1 key2 key3
+```
+
+## Hardware
+
+Unit Tester of the __hardware__ of a machine.
+
+```bash
+python utHardware.py --help
+```
+Possible machine types:
+ - bastion
+ - kafka
+ - striim
+ - psql
+ - emr
+ - redis
+ - psql2
+ - dns: This type checks that the fqdns are resolved by the DNS. Must be executed from bastion.
+
+If this file is NOT executed in an EC2 instance, the --ec2-dummy must be used, pointing to a file that simulates the ec2-metadata command.
+
+### Check an EC2 kafka machine
+
+```bash
+python utHardware.py --configfile config/config.global.json --type kafka
+```
+
+### Check a kafka machine that is NOT an EC2 instance (for testing purposes, for example)
+```bash
+python utHardware.py --configfile config/config.global.json --type kafka --dummy config/ec2-metadata-dummy.global.txt
+```
+
+### Check that the fqdns of the rest of machines are resolved by the DNS, from the EC2 bastion machine
+```bash
+python utHardware.py --configfile config/config.global.json --type dns
 ```
