@@ -161,6 +161,7 @@ def parse_args():
     parser.add_argument('-u', '--user', help='User (default=None)', type=str, default=None)
     parser.add_argument('-pw', '--password', help='Password (default=None)', type=str, default=None)
     parser.add_argument('-db', '--dbname', help='DataBase name', type=str, required=True)
+    parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
 
     parser.add_argument('-gv', '--getversion', help='Get Postgre Version', action='store_const', const=True, default=False)
     parser.add_argument('-c', '--counttable', help='Count number of rows in a table', type=str, default=None)
