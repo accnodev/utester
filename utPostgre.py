@@ -2,21 +2,19 @@
 # # -*- coding: utf-8 -*-
 
 """
-Unit test a Redis deployment.
+Unit test a PostgreSQL deployment.
 Functionalities:
  - Connect with ssl.
  - Connect without ssl.
- - Hello test. Send Hello message to Redis and get it back.
- - Get all keys.
- - Flush all.
- - Get by ky. Get message by key.
- - Delete key (or keys).
+ - Get Version. Test connection with PostgreSQL and get version.
+ - Count rows in a table..
+
 
 In order to work with password, store it under /root/psa/.psa.shadow.
 
 Example:
     Connect using SSL
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl
+        python utPostgre.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl
     Connect without SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow`
     Hello test with SSL
@@ -37,7 +35,7 @@ import argparse
 import logging
 from argparse import RawTextHelpFormatter
 
-import redis
+import psycopg2
 
 from helpers.utils import *
 
@@ -46,7 +44,7 @@ logfile = 'operations.log'
 version = "1.0"
 
 
-def send_to_redis(config):
+def check_postgre(config):
     log.debug("------------------ Begin send_to_redis ------------------")
     log_trace = 'None'
     status = 'Ok'
@@ -54,25 +52,16 @@ def send_to_redis(config):
     # ------------------------- Switch options ------------------------- #
     # SSL connection or not
     if config['sslconnection']:
-        redis = connect_redis_with_ssl(config)
+        postgre = connect_postgre_with_ssl(config)
     else:
-        redis = connect_redis_without_ssl(config)
+        postgre = connect_postgre_without_ssl(config)
 
     # Options
-    if config['hellotest']:
-        hello_redis(redis)
+    if config['getversion']:
+        get_version(postgre)
 
-    elif config['allkeys']:
-        get_all_keys(redis)
-
-    elif config['flushall']:
-        flush_all(redis)
-
-    elif config['getkey']:
-        get_key(redis, config['getkey'])
-
-    elif config['delkey']:
-        delete_keys(redis, config['delkey'])
+    elif config['counttable']:
+        count_table(postgre, config['counttable'])
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -80,11 +69,9 @@ def send_to_redis(config):
     return {"logtrace": log_trace, "status": status}
 
 
-def connect_redis_without_ssl(config):
+def connect_postgre_without_ssl(config):
     try:
-        conn = redis.StrictRedis(host=config['host'], port=config['port'], password=config['password'])
-        print(conn)
-        conn.ping()
+        conn = psycopg2.connect(user=config['user'], password=config['password'], host=config['host'], port=config['port'], dbname=config['dbname'])
         print('Connected!')
     except Exception as ex:
         e, _, ex_traceback = sys.exc_info()
@@ -93,13 +80,9 @@ def connect_redis_without_ssl(config):
     return conn
 
 
-def connect_redis_with_ssl(config):
+def connect_postgre_with_ssl(config):
     try:
-        conn = redis.StrictRedis(host=config['host'], port=config['port'], password=config['password'], ssl=True)
-        # conn = redis.StrictRedis(host=config['host'], port=config['port'], ssl=True,
-        #                          ssl_ca_certs='/etc/pki/tls/certs/cacert.crt')
-        print(conn)
-        conn.ping()
+        conn = psycopg2.connect(user=config['user'], password=config['password'], host=config['host'], port=config['port'], dbname=config['dbname'], sslmode='require')
         print('Connected!')
     except Exception as ex:
         e, _, ex_traceback = sys.exc_info()
@@ -108,49 +91,42 @@ def connect_redis_with_ssl(config):
     return conn
 
 
-def get_all_keys(redis: redis.Redis):
+def count_table(connection, table):
     try:
-        for key in redis.scan_iter():
-            print(key)
-    except Exception as e:
-        error_message(e)
+        cursor = connection.cursor()
+        # Print PostgreSQL Connection properties
+        print(connection.get_dsn_parameters(), "\n")
+        # Print PostgreSQL version
+        cursor.execute("SELECT count(*) FROM "+table+";")
+        record = cursor.fetchone()
+        print("Number of rows in ", table, ": ", record[0],"\n")
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+    finally:
+        # closing database connection.
+        if (connection):
+            cursor.close()
+            connection.close()
+            print("PostgreSQL connection is closed")
 
 
-def flush_all(redis: redis.Redis):
-    """
-    Delete all keys in all databases.
-    """
+def get_version(connection):
     try:
-        redis.flushall()
-    except Exception as e:
-        error_message(e)
-
-
-def get_key(redis: redis.Redis, key):
-    try:
-        msg = redis.get(key)
-        print("msg:", str(msg))
-    except Exception as e:
-        error_message(e)
-
-
-def delete_keys(redis: redis.Redis, keys: List[str]):
-    try:
-        redis.delete(*keys)
-    except Exception as e:
-        error_message(e)
-
-
-def hello_redis(redis):
-    try:
-        # step 1: Set the hello message in Redis
-        redis.set("msg:hello", "Hello Redis!!!")
-
-        # step 2: Retrieve the hello message from Redis
-        msg = redis.get("msg:hello")
-        print("msg:", str(msg))
-    except Exception as e:
-        error_message(e)
+        cursor = connection.cursor()
+        # Print PostgreSQL Connection properties
+        print(connection.get_dsn_parameters(), "\n")
+        # Print PostgreSQL version
+        cursor.execute("SELECT version();")
+        record = cursor.fetchone()
+        print("You are connected to - ", record, "\n")
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+    finally:
+        # closing database connection.
+        if (connection):
+            cursor.close()
+            connection.close()
+            print("PostgreSQL connection is closed")
 
 
 def main(args, loglevel):
@@ -160,17 +136,14 @@ def main(args, loglevel):
     log.debug("------------------ Reading config ------------------")
 
     config = {
-        'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
-        'hellotest': args.hellotest,
+        'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password, 'dbname': args.dbname,
+        'getversion': args.getversion,
         'sslconnection': args.sslconnection,
-        'allkeys': args.allkeys,
-        'flushall': args.flushall,
-        'getkey': args.getkey,
-        'delkey': args.delkey,
+        'counttable': args.counttable,
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
-    _info = send_to_redis(config)
+    _info = check_postgre(config)
 
     print("Done.")
     logging.info('Finished send_to_kafka')
@@ -182,17 +155,16 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
     parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + version)
 
+
     parser.add_argument('-ho', '--host', help='Host', type=str, default="none", required=True)
     parser.add_argument('-p', '--port', help='Port', type=str, default="6379", required=False)
     parser.add_argument('-u', '--user', help='User (default=None)', type=str, default=None)
     parser.add_argument('-pw', '--password', help='Password (default=None)', type=str, default=None)
+    parser.add_argument('-db', '--dbname', help='DataBase name', type=str, required=True)
 
-    parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
-    parser.add_argument('-ht', '--hellotest', help='Hello test', action='store_const', const=True, default=False)
-    parser.add_argument('-ak', '--allkeys', help='Show all keys', action='store_const', const=True, default=None)
-    parser.add_argument('-fa', '--flushall', help='Delete all keys in all databases', action='store_const', const=True, default=None)
-    parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
-    parser.add_argument('-dk', '--delkey', help='Delete key (or keys, separated by spaces)', nargs='+', type=str, default=None)
+    parser.add_argument('-gv', '--getversion', help='Get Postgre Version', action='store_const', const=True, default=False)
+    parser.add_argument('-c', '--counttable', help='Count number of rows in a table', type=str, default=None)
+
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()
