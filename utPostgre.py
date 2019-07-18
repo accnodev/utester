@@ -45,7 +45,7 @@ version = "1.0"
 
 
 def check_postgre(config):
-    log.debug("------------------ Begin send_to_redis ------------------")
+    log.debug("------------------ Begin check_postgre ------------------")
     log_trace = 'None'
     status = 'Ok'
 
@@ -64,8 +64,13 @@ def check_postgre(config):
         count_table(postgre, config['counttable'])
     # ------------------------------------------------------------------ #
 
+    # Close postgre connection
+    if postgre:
+        postgre.close()
+        print("PostgreSQL connection is closed")
+
     log_trace = "Send " + status + " | " + log_trace
-    log.debug("------------------ End send_to_redis ------------------")
+    log.debug("------------------ End check_postgre ------------------")
     return {"logtrace": log_trace, "status": status}
 
 
@@ -82,7 +87,8 @@ def connect_postgre_without_ssl(config):
 
 def connect_postgre_with_ssl(config):
     try:
-        conn = psycopg2.connect(user=config['user'], password=config['password'], host=config['host'], port=config['port'], dbname=config['dbname'], sslmode='require')
+        conn = psycopg2.connect(user=config['user'], password=config['password'], host=config['host'], port=config['port'], dbname=config['dbname'],
+                                sslmode='require')
         print('Connected!')
     except Exception as ex:
         e, _, ex_traceback = sys.exc_info()
@@ -92,53 +98,47 @@ def connect_postgre_with_ssl(config):
 
 
 def count_table(connection, table):
+    """
+    Count the number of rows of the specified table.
+    """
     try:
-        cursor = connection.cursor()
-        # Print PostgreSQL Connection properties
-        print(connection.get_dsn_parameters(), "\n")
-        # Print PostgreSQL version
-        cursor.execute("SELECT count(*) FROM "+table+";")
-        record = cursor.fetchone()
-        print("Number of rows in ", table, ": ", record[0],"\n")
-    except (Exception, psycopg2.Error) as error:
+        with connection.cursor() as cursor:
+            # Print PostgreSQL Connection properties
+            # print(connection.get_dsn_parameters(), "\n")
+            # Print PostgreSQL version
+            cursor.execute("SELECT count(*) FROM " + table + ";")
+            record = cursor.fetchone()
+            print("Number of rows in ", table, ": ", record[0], "\n")
+    except Exception as error:
         print("Error while connecting to PostgreSQL", error)
-    finally:
-        # closing database connection.
-        if (connection):
-            cursor.close()
-            connection.close()
-            print("PostgreSQL connection is closed")
 
 
 def get_version(connection):
+    """
+    Returns the PostgreSQL version. Is like a PING, to check we have connection.
+    """
     try:
-        cursor = connection.cursor()
-        # Print PostgreSQL Connection properties
-        print(connection.get_dsn_parameters(), "\n")
-        # Print PostgreSQL version
-        cursor.execute("SELECT version();")
-        record = cursor.fetchone()
-        print("You are connected to - ", record, "\n")
-    except (Exception, psycopg2.Error) as error:
+        with connection.cursor() as cursor:
+            # Print PostgreSQL Connection properties
+            # print(connection.get_dsn_parameters(), "\n")
+            # Print PostgreSQL version
+            cursor.execute("SELECT version();")
+            record = cursor.fetchone()
+            print("You are connected to - ", record, "\n")
+    except Exception as error:
         print("Error while connecting to PostgreSQL", error)
-    finally:
-        # closing database connection.
-        if (connection):
-            cursor.close()
-            connection.close()
-            print("PostgreSQL connection is closed")
 
 
 def main(args, loglevel):
     if args.logging:
         logging.basicConfig(filename=logfile, format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', level=loglevel)
-    logging.info('Started send_to_kafka')
+    logging.info('Started check_postgre')
     log.debug("------------------ Reading config ------------------")
 
     config = {
         'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password, 'dbname': args.dbname,
-        'getversion': args.getversion,
         'sslconnection': args.sslconnection,
+        'getversion': args.getversion,
         'counttable': args.counttable,
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
@@ -146,7 +146,7 @@ def main(args, loglevel):
     _info = check_postgre(config)
 
     print("Done.")
-    logging.info('Finished send_to_kafka')
+    logging.info('Finished check_postgre')
     exit_to_icinga(_info)
 
 
@@ -155,17 +155,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
     parser.add_argument('-V', '--version', action='version', version='%(prog)s ' + version)
 
-
     parser.add_argument('-ho', '--host', help='Host', type=str, default="none", required=True)
     parser.add_argument('-p', '--port', help='Port', type=str, default="6379", required=False)
     parser.add_argument('-u', '--user', help='User (default=None)', type=str, default=None)
     parser.add_argument('-pw', '--password', help='Password (default=None)', type=str, default=None)
-    parser.add_argument('-db', '--dbname', help='DataBase name', type=str, required=True)
+    parser.add_argument('-db', '--dbname', help='Database name', type=str, required=True)
     parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
 
     parser.add_argument('-gv', '--getversion', help='Get Postgre Version', action='store_const', const=True, default=False)
     parser.add_argument('-c', '--counttable', help='Count number of rows in a table', type=str, default=None)
-
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()
