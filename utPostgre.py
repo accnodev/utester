@@ -7,27 +7,17 @@ Functionalities:
  - Connect with ssl.
  - Connect without ssl.
  - Get Version. Test connection with PostgreSQL and get version.
- - Count rows in a table..
-
-
-In order to work with password, store it under /root/psa/.psa.shadow.
+ - Count number of rows in a table.
 
 Example:
     Connect using SSL
-        python utPostgre.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl
+        python utPostgre.py -ho 192.168.56.51 -p 6379 -u user -pw password -ssl
     Connect without SSL
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow`
-    Hello test with SSL
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -ht
-    Get all keys
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -ak
-    Flush all (delete all keys in all databases) with SSL
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -fa
-    Get key with SSL
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -gk msg:hello
-    Delete key (or keys, separated by spaces) with SSL
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk key1
-        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk key1 key2 key3
+        python utPostgre.py -ho 192.168.56.51 -p 6379 -u user -pw password
+    Get Version
+        python utPostgre.py -ho 192.168.56.51 -p 6379 -u user -pw password -ssl -db databaseName -gv
+    Count number of rows in a table
+        python utPostgre.py -ho 192.168.56.51 -p 6379 -u user -pw password -ssl -db databaseName -c tableName
 
 """
 
