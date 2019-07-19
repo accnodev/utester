@@ -64,6 +64,9 @@ def send_to_redis(config):
     if config['getkey']:
         get_key(redis, config['getkey'])
 
+    if config['allkeys']:
+        get_all_keys(redis)
+
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
@@ -107,6 +110,10 @@ def get_key(redis, key):
         print(e)
 
 
+def get_all_keys(redis):
+    for key in redis.scan_iter():
+        print(key)
+
 def hello_redis(redis):
     try:
         # step 1: Set the hello message in Redis
@@ -130,7 +137,8 @@ def main(args, loglevel):
         'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
         'hellotest': args.hellotest,
         'sslconnection': args.sslconnection,
-        'getkey': args.getkey
+        'getkey': args.getkey,
+        'allkeys': args.allkeys
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
@@ -153,6 +161,7 @@ def parse_args():
 
     parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
     parser.add_argument('-ht', '--hellotest', help='Hello test', action='store_const', const=True, default=False)
+    parser.add_argument('-ak', '--allkeys', help='Show all keys', action='store_const', const=True, default=False)
     parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)

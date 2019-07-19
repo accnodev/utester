@@ -29,7 +29,7 @@ import sys
 
 from argparse import RawTextHelpFormatter
 
-from confluent_kafka import Producer
+    from confluent_kafka import Producer
 from confluent_kafka.admin import AdminClient, ConfigResource, ConfigSource
 from confluent_kafka import KafkaException
 from helpers.utils import *
