@@ -170,15 +170,11 @@ def main(args, loglevel):
         'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
         'hellotest': args.hellotest,
         'sslconnection': args.sslconnection,
-<<<<<<< HEAD
         'getkey': args.getkey,
         'allkeys': args.allkeys
-=======
-        'allkeys': args.allkeys,
         'flushall': args.flushall,
         'getkey': args.getkey,
         'delkey': args.delkey,
->>>>>>> e9f631ade2cd06f061ccce27c17fcd697530b770
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
@@ -201,12 +197,8 @@ def parse_args():
 
     parser.add_argument('-ssl', '--sslconnection', help='Use SSL connection', action='store_const', const=True, default=False)
     parser.add_argument('-ht', '--hellotest', help='Hello test', action='store_const', const=True, default=False)
-<<<<<<< HEAD
-    parser.add_argument('-ak', '--allkeys', help='Show all keys', action='store_const', const=True, default=False)
-=======
     parser.add_argument('-ak', '--allkeys', help='Show all keys', action='store_const', const=True, default=None)
     parser.add_argument('-fa', '--flushall', help='Delete all keys in all databases', action='store_const', const=True, default=None)
->>>>>>> e9f631ade2cd06f061ccce27c17fcd697530b770
     parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
     parser.add_argument('-dk', '--delkey', help='Delete key (or keys, separated by spaces)', nargs='+', type=str, default=None)
 
