@@ -1,0 +1,26 @@
+ami-id: ami-11111
+ami-launch-index: 0
+ami-manifest-path: (unknown)
+ancestor-ami-ids: not available
+block-device-mapping:
+         ami: /dev/xvda
+         root: /dev/xvda
+instance-id: i-0afa111111111
+instance-type: t2.micro
+local-hostname: ip-15-15-15-15.eu-south-2.compute.internal
+local-ipv4: 15.15.15.15
+kernel-id: not available
+placement: eu-south-2c
+product-codes: not available
+public-hostname: not available
+public-ipv4: not available
+public-keys:
+keyname:COMPANY
+index:0
+format:openssh-key
+key:(begins from next line)
+ssh-rsa AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA COMPANY
+ramdisk-id: not available
+reservation-id: r-111111111111111
+security-groups: sec-aws-name-other-name-other-asdf
+user-data:

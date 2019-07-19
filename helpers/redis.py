@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # # -*- coding: utf-8 -*-
 
 """
@@ -9,7 +9,5 @@
     Python Version: 3.7.2
     Version: 1.0.0
 """
-
-import sys
 
 

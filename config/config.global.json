@@ -5,19 +5,17 @@
             "hardware": {
                 "fs": ["fs1", "fs2", "fs3"],
                 "ingress": [2888, 9093, 3888, 2181, 9092],
-                "egress": [0],
-                "etchost": {
-                    "ip": "127.0.0.1",
-                    "fqdn": "<fqdn>"
-                },
                 "instance_type": "m5.large",
                 "certs": "/some/path/to/cert.crt",
-                "tz": "Europe/Madrid",
-                "ntpd": "Active: active (running)"
+                "tz": "Europe/Madrid"
             },
             "config": {
-                "metrics": ["<fqdn>:9100/metrics", "Metrics: <fqdn>:9101/metrics"]
+                "metrics": ["<fqdn>:9100/metrics", "<fqdn>:9101/metrics"]
             }
+        },
+        {
+            "type": "dns",
+            "fqdns": ["localhost", "fqdn1", "fqdn2", "zara.com"]
         }
     ]
 }
