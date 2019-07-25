@@ -144,10 +144,6 @@ def delete_keys(redis: redis.Redis, keys: List[str]):
         error_message(e)
 
 
-def get_all_keys(redis):
-    for key in redis.scan_iter():
-        print(key)
-
 def hello_redis(redis):
     try:
         # step 1: Set the hello message in Redis
@@ -168,10 +164,9 @@ def main(args, loglevel):
 
     config = {
         'host': args.host, 'port': args.port, 'user': args.user, 'password': args.password,
-        'hellotest': args.hellotest,
         'sslconnection': args.sslconnection,
-        'getkey': args.getkey,
-        'allkeys': args.allkeys
+        'hellotest': args.hellotest,
+        'allkeys': args.allkeys,
         'flushall': args.flushall,
         'getkey': args.getkey,
         'delkey': args.delkey,
