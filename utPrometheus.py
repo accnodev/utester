@@ -67,9 +67,13 @@ def emit_counter_metric(registry: CollectorRegistry, metric_name: str, metric_de
     Emits a metric of type Counter, incrementing it's initial value (0.0) with the given value.
     """
     try:
+        # Add suffix to the metric name and prefix to the metric description
+        metric_name = metric_name + "Counter"
+        metric_description = "Counter metric description: " + metric_description
+
         counter = Counter(metric_name, metric_description, registry=registry)
         counter.inc(increment_value)
-        ok_message("Metric '{}' incremented in value '{}'".format(metric_name, increment_value))
+        ok_message("Counter metric '{}' incremented in value '{}'".format(metric_name, increment_value))
     except Exception as error:
         error_message("Error while emitting Counter metric: {}".format(error))
 
@@ -79,9 +83,13 @@ def emit_gauge_metric(registry: CollectorRegistry, metric_name: str, metric_desc
     Emits a metric of type Gauge, with the given value.
     """
     try:
+        # Add suffix to the metric name and prefix to the metric description
+        metric_name = metric_name + "Gauge"
+        metric_description = "Gauge metric description: " + metric_description
+
         gauge = Gauge(metric_name, metric_description, registry=registry)
         gauge.set(value)
-        ok_message("Metric '{}' value setted to '{}'".format(metric_name, value))
+        ok_message("Gauge metric '{}' value setted to '{}'".format(metric_name, value))
     except Exception as error:
         error_message("Error while emitting Gauge metric: {}".format(error))
 
@@ -91,6 +99,10 @@ def emit_histogram_metric(registry: CollectorRegistry, metric_name: str, metric_
     Emits a metric of type Histogram, that takes into account the number of times a function is called in a period of time.
     """
     try:
+        # Add suffix to the metric name and prefix to the metric description
+        metric_name = metric_name + "Histogram"
+        metric_description = "Histogram metric description: " + metric_description
+
         histogram = Histogram(metric_name, metric_description, registry=registry)
         histogram.observe(seconds)
 
@@ -105,7 +117,7 @@ def emit_histogram_metric(registry: CollectorRegistry, metric_name: str, metric_
         dummy_function_with_sleep(0.2)
         dummy_function_with_sleep(0.1)
 
-        ok_message("Metric '{}' was created".format(metric_name))
+        ok_message("Histogram metric '{}' was created".format(metric_name))
     except Exception as error:
         error_message("Error while emitting Histogram metric: {}".format(error))
 
@@ -115,6 +127,10 @@ def emit_summary_metric(registry: CollectorRegistry, metric_name: str, metric_de
     Emits a metric of type Summary, that takes into account the number of times a function is called in a period of time.
     """
     try:
+        # Add suffix to the metric name and prefix to the metric description
+        metric_name = metric_name + "Summary"
+        metric_description = "Summary metric description: " + metric_description
+
         summary = Summary(metric_name, metric_description, registry=registry)
         summary.observe(seconds)
 
@@ -129,7 +145,7 @@ def emit_summary_metric(registry: CollectorRegistry, metric_name: str, metric_de
         dummy_function_with_sleep(0.2)
         dummy_function_with_sleep(0.1)
 
-        ok_message("Metric '{}' was created".format(metric_name))
+        ok_message("Summary metric '{}' was created".format(metric_name))
     except Exception as error:
         error_message("Error while emitting Summary metric: {}".format(error))
 
