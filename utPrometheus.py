@@ -86,13 +86,26 @@ def emit_gauge_metric(registry: CollectorRegistry, metric_name: str, metric_desc
         error_message("Error while emitting Gauge metric: {}".format(error))
 
 
-# TODO
 def emit_histogram_metric(registry: CollectorRegistry, metric_name: str, metric_description: str, seconds: float):
     """
-    Emits a metric of type Histogram.
+    Emits a metric of type Histogram, that takes into account the number of times a function is called in a period of time.
     """
     try:
-        pass
+        histogram = Histogram(metric_name, metric_description, registry=registry)
+        histogram.observe(seconds)
+
+        @histogram.time()
+        def dummy_function_with_sleep(seconds):
+            """A dummy function"""
+            time.sleep(seconds)
+
+        dummy_function_with_sleep(0.1)
+        dummy_function_with_sleep(0.2)
+        dummy_function_with_sleep(0.3)
+        dummy_function_with_sleep(0.2)
+        dummy_function_with_sleep(0.1)
+
+        ok_message("Metric '{}' was created")
     except Exception as error:
         error_message("Error while emitting Histogram metric: {}".format(error))
 
@@ -145,7 +158,8 @@ def parse_args():
                         type=float, default=None)
     parser.add_argument('-g', '--gauge', help='Emit a metric of type Gauge. The value of this param is the value of the gauge metric.',
                         type=float, default=None)
-    parser.add_argument('-hi', '--histogram', help='Emit a metric of type Histogram', action='store_const', const=True, default=False)
+    parser.add_argument('-hi', '--histogram', help='Emit a metric of type Histogram',
+                        type=float, default=None)
     parser.add_argument('-s', '--summary', help='Emit a metric of type Summary', action='store_const', const=True, default=False)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
