@@ -123,7 +123,7 @@ def error_message(message):
     """
     Shows the message with an ERROR format.
     """
-    sys.stderr.write("[ERROR] " + message)
+    sys.stderr.write("[ERROR] " + message + "\n")
 
 
 def info_message(message):

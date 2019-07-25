@@ -127,3 +127,4 @@ garbage/
 # Configuraton
 *.local.json
 *.local.txt
+*.local.prom

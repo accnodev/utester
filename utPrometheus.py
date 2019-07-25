@@ -19,7 +19,7 @@ import logging
 import time
 from argparse import RawTextHelpFormatter
 
-from prometheus_client import CollectorRegistry, Gauge, write_to_textfile, Counter, Histogram
+from prometheus_client import CollectorRegistry, Gauge, write_to_textfile, Counter, Histogram, Summary
 
 from helpers.utils import *
 
@@ -40,7 +40,7 @@ def emit_metric(config):
     # ------------------------- Switch options ------------------------- #
     # At least one option must be passed
     if not (config['counter'] or config['gauge'] or config['histogram'] or config['summary']):
-        error_message("At least one of this options must be passed: -c/--counter, -g/--gauge, -hi/--histogram, -s/--summary\n")
+        error_message("At least one of this options must be passed: -c/--counter, -g/--gauge, -hi/--histogram, -s/--summary")
 
     # In this case, all options can be used at the same time
     if config['counter']:
@@ -105,18 +105,31 @@ def emit_histogram_metric(registry: CollectorRegistry, metric_name: str, metric_
         dummy_function_with_sleep(0.2)
         dummy_function_with_sleep(0.1)
 
-        ok_message("Metric '{}' was created")
+        ok_message("Metric '{}' was created".format(metric_name))
     except Exception as error:
         error_message("Error while emitting Histogram metric: {}".format(error))
 
 
-# TODO
-def emit_summary_metric(registry: CollectorRegistry, metric_name: str, metric_description: str, value: float):
+def emit_summary_metric(registry: CollectorRegistry, metric_name: str, metric_description: str, seconds: float):
     """
-    Emits a metric of type Summary.
+    Emits a metric of type Summary, that takes into account the number of times a function is called in a period of time.
     """
     try:
-        pass
+        summary = Summary(metric_name, metric_description, registry=registry)
+        summary.observe(seconds)
+
+        @summary.time()
+        def dummy_function_with_sleep(seconds):
+            """A dummy function"""
+            time.sleep(seconds)
+
+        dummy_function_with_sleep(0.1)
+        dummy_function_with_sleep(0.2)
+        dummy_function_with_sleep(0.3)
+        dummy_function_with_sleep(0.2)
+        dummy_function_with_sleep(0.1)
+
+        ok_message("Metric '{}' was created".format(metric_name))
     except Exception as error:
         error_message("Error while emitting Summary metric: {}".format(error))
 
@@ -158,9 +171,12 @@ def parse_args():
                         type=float, default=None)
     parser.add_argument('-g', '--gauge', help='Emit a metric of type Gauge. The value of this param is the value of the gauge metric.',
                         type=float, default=None)
-    parser.add_argument('-hi', '--histogram', help='Emit a metric of type Histogram',
+    parser.add_argument('-hi', '--histogram',
+                        help='Emit a metric of type Histogram. The value of this param is the number of seconds to observe the dummy method.',
                         type=float, default=None)
-    parser.add_argument('-s', '--summary', help='Emit a metric of type Summary', action='store_const', const=True, default=False)
+    parser.add_argument('-s', '--summary',
+                        help='Emit a metric of type Summary. The value of this param is the number of seconds to observe the dummy method.',
+                        type=float, default=None)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
     verbosity = parser.add_mutually_exclusive_group()

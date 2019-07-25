@@ -177,7 +177,7 @@ def check_dns(config: Dict):
             ok_message("The fqdn '{}' is resolved by the DNS.".format(fqdn))
         except StopIteration:
             # If the filter object is empty, the answer section didn't appear
-            error_message("The fqdn '{}' is NOT resolved by the DNS.\n".format(fqdn))
+            error_message("The fqdn '{}' is NOT resolved by the DNS.".format(fqdn))
 
 
 # ---------------- END Machine checks ---------------- #
@@ -200,14 +200,14 @@ def check_fs(required_mountpoints: List[str]):
 
             # Check that the required mountpoint isn't mounted in the same partition as another required mountpoint
             if mounted_disk_partition.device in mountpoint_partitions:
-                error_message("The required mountpoint {} is mounted in the same partition ({}) as another required mountpoint.\n"
+                error_message("The required mountpoint {} is mounted in the same partition ({}) as another required mountpoint."
                               .format(required_mountpoint, mounted_disk_partition.device))
             else:
                 ok_message("The required mountpoint {} is correctly mounted."
                            .format(required_mountpoint, mounted_disk_partition.device))
                 mountpoint_partitions.add(mounted_disk_partition.device)
         except StopIteration:
-            error_message("The required mountpoint {} is not mounted.\n".format(required_mountpoint))
+            error_message("The required mountpoint {} is not mounted.".format(required_mountpoint))
 
     # Print the df command info
     info_message("Partitions size:")
@@ -231,7 +231,7 @@ def check_ingress(required_opened_ports: List[int]):
         if required_opened_port in current_opened_ports:
             ok_message("The port {} is opened.".format(required_opened_port))
         else:
-            error_message("The port {} is NOT opened.\n".format(required_opened_port))
+            error_message("The port {} is NOT opened.".format(required_opened_port))
 
 
 def check_etc_hosts(fqdn: str):
@@ -254,7 +254,7 @@ def check_etc_hosts(fqdn: str):
             return
 
     error_message("etc/hosts file isn't configured correctly. Loopback IP isn't related to the FQDN. "
-                  "Add this line to the /etc/hosts file: '127.0.0.1    {}'\n".format(fqdn))
+                  "Add this line to the /etc/hosts file: '127.0.0.1    {}'".format(fqdn))
 
 
 def check_instance_type(expected_instance_type: str, ec2_dummy_path: str):
@@ -267,7 +267,7 @@ def check_instance_type(expected_instance_type: str, ec2_dummy_path: str):
     if instance_type == expected_instance_type:
         ok_message("Instance type is OK")
     else:
-        error_message("Instance type is WRONG. Expected: {}. Current {}.\n"
+        error_message("Instance type is WRONG. Expected: {}. Current {}."
                       .format(expected_instance_type, instance_type))
 
 
@@ -279,7 +279,7 @@ def check_certs(cert_path: str):
     if os.path.exists(cert_path):
         ok_message("Certificates exist")
     else:
-        error_message("Certificates doesn't exist in this path: {}.\n".format(cert_path))
+        error_message("Certificates doesn't exist in this path: {}.".format(cert_path))
 
 
 def check_tz(expected_tz: str):
@@ -291,7 +291,7 @@ def check_tz(expected_tz: str):
     if tz == expected_tz:
         ok_message("Timezone is OK")
     else:
-        error_message("Timezone is WRONG. Expected: {}. Current: {}.\n".format(expected_tz, tz))
+        error_message("Timezone is WRONG. Expected: {}. Current: {}.".format(expected_tz, tz))
 
 
 def check_ntpd():
@@ -304,13 +304,13 @@ def check_ntpd():
         if ntpd_status.startswith("active (running)"):
             ok_message("ntpd is active and running")
         else:
-            error_message("ntpd is not active and running. Current ntpd status: {}.\n".format(ntpd_status))
+            error_message("ntpd is not active and running. Current ntpd status: {}.".format(ntpd_status))
     except IndexError:
         # An IndexError can be raised by 2 reasons:
         # * The ntpd.service could not be found by the systemctl status command
         # * The grep command didn't find "Active:"
         # This means that ntpd is not configured correctly
-        error_message("ntpd.service could not be found.\n")
+        error_message("ntpd.service could not be found.")
 
 
 def check_config_metrics(fqdn: str, metrics_endpoints: List[str]):
@@ -329,12 +329,12 @@ def check_config_metrics(fqdn: str, metrics_endpoints: List[str]):
             if response_code == 200:
                 ok_message("The metrics endpoint {} is running.".format(metrics_endpoint_with_fqdn))
             else:
-                error_message("The metrics endpoint {} response wasn't 200 OK. HTTP status code: {}.\n"
+                error_message("The metrics endpoint {} response wasn't 200 OK. HTTP status code: {}."
                               .format(metrics_endpoint_with_fqdn, response_code))
 
         except urllib.error.URLError as e:
             # If the endpoint is not running, an exception is raised
-            error_message("The metrics endpoint {} is not running. Reason: {}.\n".format(metrics_endpoint_with_fqdn, e.reason))
+            error_message("The metrics endpoint {} is not running. Reason: {}.".format(metrics_endpoint_with_fqdn, e.reason))
 
 
 # ---------------- END Unit checks ---------------- #
