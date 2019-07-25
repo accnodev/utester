@@ -10,7 +10,16 @@ Metric types:
  - Summary.
 
 Example:
-    TODO
+    Send a Counter metric to a file
+        python utPrometheus.py -f /path/to/file -mn metricName -md metricDescription --counter 2.5
+    Send a Gauge metric to a file
+        python utPrometheus.py -f /path/to/file -mn metricName -md metricDescription --gauge 5.5
+    Send a Histogram metric to a file
+        python utPrometheus.py -f /path/to/file -mn metricName -md metricDescription --histogram 2
+    Send a Summary metric to a file
+        python utPrometheus.py -f /path/to/file -mn metricName -md metricDescription --summary 3
+    Send all metrics to a file
+        python utPrometheus.py -f /path/to/file -mn metricName -md metricDescription -c 2.5 -g 5.5 -hi 2 -s 3
 
 """
 
