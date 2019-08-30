@@ -10,6 +10,7 @@ Functionalities:
  - Get all keys.
  - Flush all.
  - Get by ky. Get message by key.
+ - Set key-value pair.
  - Delete key (or keys).
 
 In order to work with password, store it under /root/psa/.psa.shadow.
@@ -27,6 +28,8 @@ Example:
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -fa
     Get key with SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -gk msg:hello
+    Set key-value pair with SSL
+        python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -set key value
     Delete key (or keys, separated by spaces) with SSL
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk key1
         python utRedis.py -ho 192.168.56.51 -p 6379 -pw `cat /root/psa/.psa.shadow` -ssl -dk key1 key2 key3
@@ -46,8 +49,8 @@ logfile = 'operations.log'
 version = "1.0"
 
 
-def send_to_redis(config):
-    log.debug("------------------ Begin send_to_redis ------------------")
+def communicate_with_redis(config):
+    log.debug("------------------ Begin communicate_with_redis ------------------")
     log_trace = 'None'
     status = 'Ok'
 
@@ -71,15 +74,15 @@ def send_to_redis(config):
     elif config['getkey']:
         get_key(redis, config['getkey'])
 
-    elif config['allkeys']:
-        get_all_keys(redis)
+    elif config['set']:
+        set_key_value_pair(redis, config['set'][0], config['set'][1])
 
     elif config['delkey']:
         delete_keys(redis, config['delkey'])
     # ------------------------------------------------------------------ #
 
     log_trace = "Send " + status + " | " + log_trace
-    log.debug("------------------ End send_to_redis ------------------")
+    log.debug("------------------ End communicate_with_redis ------------------")
     return {"logtrace": log_trace, "status": status}
 
 
@@ -137,6 +140,22 @@ def get_key(redis: redis.Redis, key):
         error_message(e)
 
 
+def set_key_value_pair(redis: redis.Redis, key: str, value: str):
+    try:
+        # Set the key-pair value in Redis
+        redis.set(key, value)
+
+        # Retrieve the value with that key from Redis, to check that it was set correctly
+        value_with_that_key_from_redis = str(redis.get(key))
+
+        if value_with_that_key_from_redis != value:
+            raise Exception("The key-value pair wasn't set correctly!")
+        else:
+            print("Setted in Redis correctly the pair: key='{}', value='{}'".format(key, value))
+    except Exception as e:
+        error_message(e)
+
+
 def delete_keys(redis: redis.Redis, keys: List[str]):
     try:
         redis.delete(*keys)
@@ -169,11 +188,12 @@ def main(args, loglevel):
         'allkeys': args.allkeys,
         'flushall': args.flushall,
         'getkey': args.getkey,
+        'set': args.set,
         'delkey': args.delkey,
     }
     config['root_dir'] = os.path.dirname(os.path.abspath(__file__))
 
-    _info = send_to_redis(config)
+    _info = communicate_with_redis(config)
 
     print("Done.")
     logging.info('Finished send_to_kafka')
@@ -195,6 +215,7 @@ def parse_args():
     parser.add_argument('-ak', '--allkeys', help='Show all keys', action='store_const', const=True, default=None)
     parser.add_argument('-fa', '--flushall', help='Delete all keys in all databases', action='store_const', const=True, default=None)
     parser.add_argument('-gk', '--getkey', help='Get by key value (default=None)', type=str, default=None)
+    parser.add_argument('-s', '--set', help='Set key-value pair', type=str, default=None, nargs=2)
     parser.add_argument('-dk', '--delkey', help='Delete key (or keys, separated by spaces)', nargs='+', type=str, default=None)
 
     parser.add_argument('-l', '--logging', help='create log output in current directory', action='store_const', const=True, default=False)
