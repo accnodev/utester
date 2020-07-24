@@ -28,7 +28,7 @@ import time
 from argparse import RawTextHelpFormatter
 
 def check_nifi_status():
-    p = subprocess.Popen(['systemctl','status','docker'], stdout=subprocess.PIPE)
+    p = subprocess.Popen(['systemctl','status','nifi'], stdout=subprocess.PIPE)
     out, err = p.communicate()
     print(out)
 
@@ -40,9 +40,9 @@ def start_nifi():
     p=subprocess.Popen(['chmod','-R', '777','/var/run/nifi'], stdout=subprocess.PIPE)
 
     # Restart nifi service
-    p1 = subprocess.Popen(['systemctl','stop','docker'], stdout=subprocess.PIPE)
+    p1 = subprocess.Popen(['systemctl','stop','nifi'], stdout=subprocess.PIPE)
     p1.wait()
-    p1 = subprocess.Popen(['systemctl','start','docker'], stdout=subprocess.PIPE)
+    p1 = subprocess.Popen(['systemctl','start','nifi'], stdout=subprocess.PIPE)
 
 def start_wiremock():
 
@@ -50,7 +50,7 @@ def start_wiremock():
     p = subprocess.Popen(['nohup','java','-jar','/opt/nifi/wiremock/wiremock-standalone-2.26.3.jar' ,'--port 9091'], stdout=subprocess.PIPE)
 
 def stop_nifi():
-    p = subprocess.Popen(['systemctl','stop','docker'], stdout=subprocess.PIPE)
+    p = subprocess.Popen(['systemctl','stop','nifi'], stdout=subprocess.PIPE)
 
 def main(args, loglevel):
     if args.operation == 'status':
