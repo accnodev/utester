@@ -128,3 +128,34 @@ python utHardware.py --configfile config/config.global.json --type kafka --dummy
 ```bash
 python utHardware.py --configfile config/config.global.json --type dns
 ```
+
+## Nifi
+
+Unit Tester for __Nifi__ start.
+
+```bash
+python utNifi.py --help
+```
+
+ - Run nifi service
+ - Stop nifi service
+ - Check status nifi service
+ - Run Wiremock microservice
+
+### Run nifi service && Wiremock
+
+```python
+python utNifi.py -op start
+```
+
+### Stop nifi service
+
+```python
+python utNifi.py -op stop
+```
+
+### Check nifi service status
+
+```python
+python utNifi.py -op status
+```

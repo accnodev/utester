@@ -8,11 +8,16 @@ Unit test Nifi start.
  - Test restart nifi service
  - Test run Wiremock .jar
 
-To test nifi is actively running, on nifi node try:
-    python utNifi.py -op status
-
 Example:
-    python utNifi.py -op start
+
+    To test nifi is actively running, on nifi node try:
+        python utNifi.py -op status
+
+    To test start nifi service, on nifi node try:
+        python utNifi.py -op start
+
+    To test stop nifi service, on nifi node try:
+        python utNifi.py -op stop
 
 """
 
