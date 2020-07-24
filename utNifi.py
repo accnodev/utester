@@ -22,13 +22,41 @@ import subprocess
 import time
 from argparse import RawTextHelpFormatter
 
+def check_nifi_status():
+    p = subprocess.Popen(['systemctl','status','docker'], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    print(out)
+
 def start_nifi():
-    p=subprocess.Popen("mkdir -p /var/run/nifi", shell=True)
+
+    # Creates executable folder
+    p=subprocess.Popen(['mkdir','-p','/var/run/nifi'], stdout=subprocess.PIPE)
     p.wait()
-    p=subprocess.Popen("chmod -R 777 /var/run/nifi", shell=True)
+    p=subprocess.Popen(['chmod','-R', '777','/var/run/nifi'], stdout=subprocess.PIPE)
+
+    # Restart nifi service
+    p1 = subprocess.Popen(['systemctl','stop','docker'], stdout=subprocess.PIPE)
+    p1.wait()
+    p1 = subprocess.Popen(['systemctl','start','docker'], stdout=subprocess.PIPE)
+
+def start_wiremock():
+
+    # Executes Wiremock microservice
+    p = subprocess.Popen(['nohup','java','-jar','/opt/nifi/wiremock/wiremock-standalone-2.26.3.jar' ,'--port 9091'], stdout=subprocess.PIPE)
+
+def stop_nifi():
+    p = subprocess.Popen(['systemctl','stop','docker'], stdout=subprocess.PIPE)
 
 def main(args, loglevel):
-    start_nifi()
+    if args.operation == 'status':
+        check_nifi_status()
+
+    elif args.operation == 'start':
+        start_nifi()
+        time.sleep(10)
+        start_wiremock()
+    elif args.operation == 'stop':
+        stop_nifi()
 
 def parse_args():
     """Parse command line arguments."""
