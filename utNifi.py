@@ -11,13 +11,13 @@ Unit test Nifi start.
 Example:
 
     To test nifi is actively running, on nifi node try:
-        python utNifi.py -op status
+        python utNifi.py -op statusPid
 
     To test start nifi service, on nifi node try:
-        python utNifi.py -op start
+        python utNifi.py -op startPid
 
     To test stop nifi service, on nifi node try:
-        python utNifi.py -op stop
+        python utNifi.py -op stopPid
 
 """
 
@@ -58,16 +58,19 @@ def stop_nifi():
 
 def main(args, loglevel):
 
-    if args.operation == 'status':
+    if args.operation == 'statusPid':
         check_nifi_status()
 
-    elif args.operation == 'start':
+    elif args.operation == 'startPid':
         start_nifi()
         time.sleep(10)
         start_wiremock()
 
-    elif args.operation == 'stop':
+    elif args.operation == 'stopPid':
         stop_nifi()
+
+    else:
+        print('Invalid option')
 
 def parse_args():
     """Parse command line arguments."""
