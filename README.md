@@ -145,17 +145,17 @@ python utNifi.py --help
 ### Run nifi service && Wiremock
 
 ```python
-python utNifi.py -op start
+python utNifi.py -op startPid
 ```
 
 ### Stop nifi service
 
 ```python
-python utNifi.py -op stop
+python utNifi.py -op stopPid
 ```
 
 ### Check nifi service status
 
 ```python
-python utNifi.py -op status
+python utNifi.py -op statusPid
 ```
