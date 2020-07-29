@@ -6,7 +6,7 @@ Unit test Nifi start.
  - Test creates nifi run directory. This will autocreate a directory named '/var/run/nifi'
  - Test gives permissions to the correponding folder '/var/run/nifi'
  - Test restart nifi service
- - Test run Wiremock .jar
+ - Test run Wiremock .jar - PENDING TO SOLVE
 
 Example:
 
@@ -46,10 +46,10 @@ def start_nifi():
     p1.wait()
     p1 = subprocess.Popen(['systemctl','start','nifi'], stdout=subprocess.PIPE)
 
-def start_wiremock():
-
-    # Executes Wiremock microservice
-    p = subprocess.Popen(['nohup','java','-jar','/opt/nifi/wiremock/wiremock-standalone-2.26.3.jar' ,'--port 9091&'], stdout=subprocess.PIPE)
+#def start_wiremock():
+#
+#    # Executes Wiremock microservice
+#    p = subprocess.Popen(['nohup','java','-jar','/opt/nifi/wiremock/wiremock-standalone-2.26.3.jar' ,'--port 9091&'], stdout=subprocess.PIPE)
 
 def stop_nifi():
 
@@ -63,8 +63,8 @@ def main(args, loglevel):
 
     elif args.operation == 'startPid':
         start_nifi()
-        time.sleep(10)
-        start_wiremock()
+        #time.sleep(10)
+        #start_wiremock()
 
     elif args.operation == 'stopPid':
         stop_nifi()
