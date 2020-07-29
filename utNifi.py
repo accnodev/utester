@@ -45,6 +45,7 @@ def start_nifi():
     p1 = subprocess.Popen(['systemctl','stop','nifi'], stdout=subprocess.PIPE)
     p1.wait()
     p1 = subprocess.Popen(['systemctl','start','nifi'], stdout=subprocess.PIPE)
+    print('Nifi service started successfully')
 
 #def start_wiremock():
 #
@@ -55,6 +56,7 @@ def stop_nifi():
 
     # Stop nifi service
     p = subprocess.Popen(['systemctl','stop','nifi'], stdout=subprocess.PIPE)
+    print('Nifi service stopped successfully')
 
 def main(args, loglevel):
 
